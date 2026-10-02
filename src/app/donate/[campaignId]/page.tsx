@@ -4,9 +4,13 @@ import { TrackMount } from "@/components/analytics/TrackMount";
 import { CampaignSummary } from "@/components/checkout/CampaignSummary";
 import { CheckoutForm } from "@/components/checkout/CheckoutForm";
 import { CheckoutMesh } from "@/components/checkout/CheckoutMesh";
+import { DemoNotice } from "@/components/checkout/DemoNotice";
 import { Footer } from "@/components/landing/Footer";
 import { NavBar } from "@/components/landing/NavBar";
 import { getCampaignById } from "@/lib/campaigns";
+import { resolveDonationMode } from "@/lib/checkout/donation-mode";
+import { submitDemoDonation } from "@/lib/checkout/demoSubmit";
+import { DEMO_POLICY } from "@/lib/checkout/policy";
 import { submitDonation } from "@/lib/checkout/submitDonation";
 
 interface DonatePageProps {
@@ -17,6 +21,7 @@ export default async function DonatePage({ params }: DonatePageProps) {
   const { campaignId } = await params;
   const campaign = getCampaignById(campaignId);
   if (!campaign) notFound();
+  const isDemo = resolveDonationMode() === "demo";
 
   return (
     <>
@@ -27,7 +32,18 @@ export default async function DonatePage({ params }: DonatePageProps) {
         <div className="mb-6">
           <CampaignSummary campaign={campaign} />
         </div>
-        <CheckoutForm campaignId={campaign.id} onSubmit={submitDonation} />
+        {isDemo ? (
+          <>
+            <DemoNotice />
+            <CheckoutForm
+              campaignId={campaign.id}
+              policy={DEMO_POLICY}
+              onSubmit={submitDemoDonation}
+            />
+          </>
+        ) : (
+          <CheckoutForm campaignId={campaign.id} onSubmit={submitDonation} />
+        )}
       </main>
       <Footer />
     </>

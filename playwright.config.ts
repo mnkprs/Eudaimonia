@@ -44,5 +44,7 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // Existing e2e checkout specs exercise the on-ramp flow, not the testnet demo.
+    env: { NEXT_PUBLIC_DONATION_MODE: "onramp" },
   },
 });
