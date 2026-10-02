@@ -2,6 +2,7 @@ import {
   decodeEventLog,
   isAddress,
   parseAbiItem,
+  toEventSelector,
   type Address,
   type Hex,
 } from "viem";
@@ -143,4 +144,31 @@ export function decodeDonationRoutedLog(log: RawEventLog): DonationRoutedArgs {
     fee: args.fee,
     net: args.net,
   };
+}
+
+// --- DonationRouted log finder (shared by receipt loaders / hooks) -----------
+
+const DONATION_ROUTED_TOPIC: Hex = toEventSelector(DONATION_ROUTED_EVENT);
+
+/** A raw log that also carries the emitting contract address (viem `Log` fits). */
+export type AddressedEventLog = RawEventLog & { address: Address };
+
+/**
+ * Finds the first `DonationRouted` log (by topic-0) and decodes it.
+ *
+ * @returns The decoded args plus the emitting `address`, or `null` when no log
+ *   carries the DonationRouted topic.
+ * @throws If a log carries the DonationRouted topic but its payload is
+ *   malformed. Same convention as `verifyDonation` (endaoment/verify.ts): a
+ *   matching topic that fails to decode is corrupt data, not "absent".
+ */
+export function findDonationRouted(
+  logs: readonly AddressedEventLog[],
+): (DonationRoutedArgs & { address: Address }) | null {
+  const routed = logs.find(
+    (log) => log.topics[0]?.toLowerCase() === DONATION_ROUTED_TOPIC,
+  );
+  if (!routed) return null;
+
+  return { ...decodeDonationRoutedLog(routed), address: routed.address };
 }
