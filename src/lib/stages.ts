@@ -78,6 +78,13 @@ export interface BuildStagesInput {
   };
   /** True only when a Eudaimonia platform fee was actually taken on-chain. */
   eudaimoniaFeeActive: boolean;
+  /**
+   * Stage copy flavour. `"testnet-demo"` (Base Sepolia) swaps wording that
+   * would be false for a demo (card on-ramp, OrgFundFactory, charity multisig)
+   * for accurate test-USDC / router / stand-in copy. Omit or `"default"` for
+   * the production copy, which is unchanged.
+   */
+  variant?: "default" | "testnet-demo";
 }
 
 const formatRelativeSeconds = (seconds: number): string => `+${seconds}s`;
@@ -105,7 +112,69 @@ const eudaimoniaActiveDetail =
 const buildSettledDetail = (confirmations: string): string =>
   `${confirmations} confirmations. Final. The funds are spendable by the charity’s multisig.`;
 
+const STAND_IN_FEE_LABEL = "Endaoment fee (stand-in)";
+
+/**
+ * Returns `stages` with the demo-only wording applied (testnet-demo variant).
+ * Numbers, timestamps and addresses are untouched; only copy changes.
+ */
+function applyTestnetDemoCopy(
+  stages: readonly Stage[],
+  endaomentFeeAmount: string,
+): Stage[] {
+  const [donated, converted, routed, eudaimoniaFee, settled] = stages;
+
+  return [
+    {
+      ...donated,
+      short: "Demo wallet sent test USDC",
+      detail:
+        "The demo wallet signed and broadcast this tx on Base Sepolia. It moved test USDC, which has no monetary value.",
+    },
+    {
+      ...converted,
+      short: "No conversion · test USDC used directly",
+      relative: "not needed",
+      address: "None",
+      addressLabel: "Provider",
+      detail:
+        "This demo spends test USDC directly, so no card payment, on-chain swap or currency conversion took place.",
+      contract: "None · Test USDC",
+    },
+    {
+      ...routed,
+      short: "Through the Eudaimonia router · stand-in fee taken",
+      detail: `The Eudaimonia router splits the donation in this single tx: its 1% platform fee, a 1.5% stand-in for Endaoment’s fee ($${endaomentFeeAmount}), and the rest to the testnet stand-in charity contract. Endaoment’s real contracts are not involved.`,
+      contract: "Eudaimonia · Router",
+      feeOnHover: routed.feeOnHover && {
+        ...routed.feeOnHover,
+        label: STAND_IN_FEE_LABEL,
+      },
+    },
+    eudaimoniaFee.inactive
+      ? eudaimoniaFee
+      : {
+          ...eudaimoniaFee,
+          detail:
+            "Eudaimonia charges a 1% platform fee, taken on-chain in the same tx that routes the donation to the stand-in charity contract.",
+        },
+    {
+      ...settled,
+      short: "Arrived at the testnet stand-in contract",
+      detail:
+        "This is a testnet stand-in contract, not a real charity account. No real funds moved.",
+    },
+  ];
+}
+
 export function buildStages(input: BuildStagesInput): Stage[] {
+  const stages = buildDefaultStages(input);
+  return input.variant === "testnet-demo"
+    ? applyTestnetDemoCopy(stages, input.routing.endaomentFee.amount)
+    : stages;
+}
+
+function buildDefaultStages(input: BuildStagesInput): Stage[] {
   const {
     donor,
     swap,

@@ -289,6 +289,8 @@ export function buildReceiptBundle(
       relativeSeconds: 0,
     },
     eudaimoniaFeeActive: true,
+    // Base Sepolia donations go to testnet stand-ins, so the copy must say so
+    variant: input.chainId === baseSepolia.id ? "testnet-demo" : "default",
   });
 
   return { data, stages };

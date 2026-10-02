@@ -1,7 +1,20 @@
 import { Wordmark } from "@/components/brand/Wordmark";
+import { isTestnetNetwork } from "@/lib/chain";
 import { colors } from "@/lib/tokens";
+import type { Network } from "@/types/receipt";
 
-export function Footer() {
+const MAINNET_DISCLAIMER =
+  "Eudaimonia is a non-custodial donation router. Donations are tax-deductible to the extent allowed by law, processed through Endaoment Inc. (EIN 84-3104578). This receipt is generated from on-chain data and is verifiable independently.";
+
+const TESTNET_DISCLAIMER =
+  "Demo receipt: test USDC on Base Sepolia, so no real money moved and this is not tax-deductible. Charity contracts here are testnet stand-ins, not affiliated with Endaoment.";
+
+interface FooterProps {
+  /** Network the receipt settled on; Base Sepolia swaps in the testnet disclosure. */
+  network?: Network;
+}
+
+export function Footer({ network = "Base" }: FooterProps) {
   return (
     <footer style={{ maxWidth: 1240, margin: "0 auto", padding: "24px 64px 72px" }}>
       <div
@@ -18,10 +31,10 @@ export function Footer() {
           <Wordmark size={13} color={colors.inkMute} />
         </div>
         <div style={{ display: "flex", gap: 24 }}>
-          <FooterLink href="#" emphasis>
+          <FooterLink href="/" emphasis>
             What is Eudaimonia? →
           </FooterLink>
-          <FooterLink href="#">How fees work</FooterLink>
+          <FooterLink href="/fee-policy">How fees work</FooterLink>
           <FooterLink href="#">Contact</FooterLink>
         </div>
       </div>
@@ -36,10 +49,7 @@ export function Footer() {
           lineHeight: 1.5,
         }}
       >
-        Eudaimonia is a non-custodial donation router. Donations are tax-deductible
-        to the extent allowed by law, processed through Endaoment Inc. (EIN
-        84-3104578). This receipt is generated from on-chain data and is
-        verifiable independently.
+        {isTestnetNetwork(network) ? TESTNET_DISCLAIMER : MAINNET_DISCLAIMER}
       </p>
     </footer>
   );

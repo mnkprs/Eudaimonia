@@ -62,7 +62,7 @@ export function EudaimoniaReceipt({
         orgBaseScanUrl={orgUrl}
       />
       <ShareRow />
-      <Footer />
+      <Footer network={bundle.data.network} />
     </div>
   );
 }

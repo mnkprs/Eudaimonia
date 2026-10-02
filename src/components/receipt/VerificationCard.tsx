@@ -4,6 +4,7 @@ import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { Mono } from "@/components/ui/Mono";
 import { Num } from "@/components/ui/Num";
 import { VerifyLink } from "@/components/ui/VerifyLink";
+import { isTestnetNetwork } from "@/lib/chain";
 import { colors } from "@/lib/tokens";
 import type { ReceiptData } from "@/types/receipt";
 
@@ -33,7 +34,11 @@ export function VerificationCard({
     <section style={{ maxWidth: 1240, margin: "0 auto", padding: "0 64px 56px" }}>
       <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
         <EyebrowLabel>Proof</EyebrowLabel>
-        <EndaomentBadge size="sm" href={orgBaseScanUrl} />
+        <EndaomentBadge
+          size="sm"
+          href={orgBaseScanUrl}
+          variant={isTestnetNetwork(data.network) ? "testnet-stand-in" : "verified"}
+        />
       </div>
       <div
         style={{
@@ -163,7 +168,10 @@ function FeeStrip({ data }: FeeStripProps) {
       >
         <FeeCell label="Donor paid" value={`$${data.amount}`} />
         <FeeCell label="Network fee" value={`$${data.donorFee} (sponsored)`} />
-        <FeeCell label="Endaoment fee" value={`$${data.endaomentFee} (1.5%)`} />
+        <FeeCell
+          label={isTestnetNetwork(data.network) ? "Endaoment fee (stand-in)" : "Endaoment fee"}
+          value={`$${data.endaomentFee} (1.5%)`}
+        />
         <FeeCell
           label="Eudaimonia fee"
           value={platformFeeIsZero ? "not active" : `$${data.platformFee} (1%)`}

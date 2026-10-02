@@ -5,6 +5,12 @@ interface EndaomentBadgeProps {
   href?: string;
   /** Visual size of the badge. Defaults to "md". */
   size?: "sm" | "md";
+  /**
+   * "verified" (default) reads "Verified by Endaoment". "testnet-stand-in"
+   * reads "Testnet stand-in" for Base Sepolia demos, where the org is a
+   * stand-in contract and not a real Endaoment entity.
+   */
+  variant?: "verified" | "testnet-stand-in";
 }
 
 const FONT_SIZE: Record<NonNullable<EndaomentBadgeProps["size"]>, number> = {
@@ -13,7 +19,7 @@ const FONT_SIZE: Record<NonNullable<EndaomentBadgeProps["size"]>, number> = {
 };
 
 /**
- * "Verified by Endaoment" trust badge.
+ * "Verified by Endaoment" trust badge (or "Testnet stand-in" on Base Sepolia).
  *
  * Renders as an `<a>` when `href` is supplied (e.g. a BaseScan org address),
  * or a `<span>` otherwise. Always visible — not decorative — so it carries
@@ -21,7 +27,12 @@ const FONT_SIZE: Record<NonNullable<EndaomentBadgeProps["size"]>, number> = {
  *
  * Styled strictly with DESIGN.md tokens: no glow, no neon, no crypto motifs.
  */
-export function EndaomentBadge({ href, size = "md" }: EndaomentBadgeProps) {
+export function EndaomentBadge({
+  href,
+  size = "md",
+  variant = "verified",
+}: EndaomentBadgeProps) {
+  const isStandIn = variant === "testnet-stand-in";
   const fontSize = FONT_SIZE[size];
 
   const sharedStyle: React.CSSProperties = {
@@ -55,11 +66,17 @@ export function EndaomentBadge({ href, size = "md" }: EndaomentBadgeProps) {
     />
   );
 
-  const ariaLabel = href
-    ? "Verified by Endaoment — view on BaseScan"
-    : "Verified by Endaoment";
+  const label = isStandIn ? "Testnet stand-in" : "Verified by Endaoment";
+  const ariaLabel = href ? `${label} — view on BaseScan` : label;
 
-  const inner = (
+  const inner = isStandIn ? (
+    <>
+      {dot}
+      <span style={{ color: colors.primary, fontWeight: 500 }}>
+        Testnet stand-in
+      </span>
+    </>
+  ) : (
     <>
       {dot}
       <span style={{ color: colors.inkMute }}>Verified by</span>

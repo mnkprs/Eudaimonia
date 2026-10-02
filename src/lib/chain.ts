@@ -16,3 +16,11 @@ export function resolveAppChainId(
 ): number {
   return env.NEXT_PUBLIC_CHAIN === "base" ? base.id : baseSepolia.id;
 }
+
+/**
+ * True when a receipt's network label is the Base Sepolia testnet, where the
+ * charity contracts are stand-ins and receipt copy must say so.
+ */
+export function isTestnetNetwork(network: string): boolean {
+  return network === "Base Sepolia";
+}
