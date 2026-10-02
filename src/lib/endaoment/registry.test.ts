@@ -3,7 +3,11 @@ import { base, baseSepolia } from "wagmi/chains";
 import type { Address } from "viem";
 
 import type { OrgAddressMap } from "./orgs";
-import { deriveBaseScanUrl, getCharity } from "./registry";
+import {
+  deriveBaseScanUrl,
+  getCharity,
+  getCharityByOrgAddress,
+} from "./registry";
 
 const PCRF_EIN = "93-1057665";
 const PCRF_ADDR =
@@ -83,5 +87,46 @@ describe("getCharity", () => {
     expect(charity?.name).toBe("Palestine Children's Relief Fund");
     expect(charity?.endaomentOrgAddress).toMatch(/^0x[a-fA-F0-9]{40}$/);
     expect(charity?.baseScanUrl).toContain("sepolia.basescan.org/address/");
+  });
+});
+
+describe("getCharityByOrgAddress", () => {
+  const WCK_EIN = "27-3521132";
+  const DR_EIN = "95-1831116";
+  const WCK_ADDR = "0x2222222222222222222222222222222222222222" as Address;
+  const DR_ADDR = "0xaAaAaAaaAaAaAaaAaAAAAAAAAaaaAaAaAaaAaaAa" as Address;
+
+  const MAP: OrgAddressMap = {
+    [PCRF_EIN]: { [baseSepolia.id]: PCRF_ADDR },
+    [WCK_EIN]: { [baseSepolia.id]: WCK_ADDR },
+    [DR_EIN]: { [baseSepolia.id]: DR_ADDR },
+  };
+
+  it.each([
+    ["pcrf", PCRF_ADDR],
+    ["wck", WCK_ADDR],
+    ["directrelief", DR_ADDR],
+  ])("matches the %s org address", (id, addr) => {
+    expect(getCharityByOrgAddress(addr, baseSepolia.id, MAP)?.id).toBe(id);
+  });
+
+  it("matches case-insensitively", () => {
+    const upper = `0x${DR_ADDR.slice(2).toUpperCase()}`;
+    expect(getCharityByOrgAddress(upper, baseSepolia.id, MAP)?.id).toBe(
+      "directrelief",
+    );
+  });
+
+  it("returns undefined for an unknown org", () => {
+    const unknown = "0x9999999999999999999999999999999999999999";
+    expect(getCharityByOrgAddress(unknown, baseSepolia.id, MAP)).toBeUndefined();
+  });
+
+  it("returns undefined for a malformed org string", () => {
+    expect(getCharityByOrgAddress("nope", baseSepolia.id, MAP)).toBeUndefined();
+  });
+
+  it("returns undefined on a chain with no configured entities", () => {
+    expect(getCharityByOrgAddress(WCK_ADDR, base.id, MAP)).toBeUndefined();
   });
 });
