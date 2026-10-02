@@ -394,6 +394,35 @@ describe("buildReceiptBundle", () => {
     });
   });
 
+  describe("stage copy variant by chain", () => {
+    const bundleFor = (chainId: number) =>
+      buildReceiptBundle({
+        receipt: MOCK_SEPOLIA_RECEIPT,
+        routerAddress: ROUTER_ADDRESS,
+        orgAddress: ORG_ENTITY,
+        chainId,
+        txid: MOCK_SEPOLIA_RECEIPT.transactionHash,
+        charity: STUB_CHARITY,
+        orgMetadata: STUB_ORG_METADATA,
+        block: STUB_BLOCK,
+        confirmations: FIXTURE_CONFIRMATIONS,
+      });
+
+    it("uses honest testnet-demo stage copy on Base Sepolia", () => {
+      const routed = bundleFor(84532).stages[2];
+      expect(routed.contract).toBe("Eudaimonia · Router");
+      expect(JSON.stringify(bundleFor(84532).stages)).not.toMatch(
+        /OrgFundFactory|multisig|onramp/i,
+      );
+    });
+
+    it("keeps the Endaoment stage copy on Base mainnet", () => {
+      expect(bundleFor(8453).stages[2].contract).toBe(
+        "Endaoment · OrgFundFactory",
+      );
+    });
+  });
+
   // -------------------------------------------------------------------------
   // txid field mapping
   // -------------------------------------------------------------------------

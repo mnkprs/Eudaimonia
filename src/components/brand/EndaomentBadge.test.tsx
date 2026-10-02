@@ -54,3 +54,27 @@ describe("EndaomentBadge", () => {
     expect(html).toContain("#533afd"); // colors.primary
   });
 });
+
+describe("EndaomentBadge testnet-stand-in variant", () => {
+  test('reads "Testnet stand-in" and not "Verified by Endaoment"', () => {
+    const html = renderToString(<EndaomentBadge variant="testnet-stand-in" />);
+    expect(html).toContain("Testnet stand-in");
+    expect(html).not.toContain("Verified by");
+    expect(html).not.toContain("Endaoment");
+  });
+
+  test("still links to the explorer when href is provided", () => {
+    const url = "https://sepolia.basescan.org/address/0xabc";
+    const html = renderToString(
+      <EndaomentBadge variant="testnet-stand-in" href={url} />,
+    );
+    expect(html).toContain(`href="${url}"`);
+    expect(html).toContain('aria-label="Testnet stand-in');
+  });
+
+  test("default variant output is identical to explicit verified", () => {
+    expect(renderToString(<EndaomentBadge />)).toBe(
+      renderToString(<EndaomentBadge variant="verified" />),
+    );
+  });
+});

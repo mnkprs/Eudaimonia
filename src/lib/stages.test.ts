@@ -128,3 +128,46 @@ describe("buildStages", () => {
     expect(stages[3].inactive).toBeFalsy();
   });
 });
+
+describe("buildStages testnet-demo variant", () => {
+  const demoInput: BuildStagesInput = {
+    ...referenceInput,
+    usdcProvenance: {
+      amountUsdc: "1.000000",
+      offChainShort: "Fiat → USDC via off-chain onramp",
+    },
+    relativeMode: "same-block",
+    eudaimoniaFeeActive: true,
+  };
+  const demo = buildStages({ ...demoInput, variant: "testnet-demo" });
+
+  it("keeps the 5-stage shape and amounts", () => {
+    expect(demo.map((s) => s.n)).toEqual([1, 2, 3, 4, 5]);
+    expect(demo.map((s) => s.amount)).toEqual(
+      buildStages(demoInput).map((s) => s.amount),
+    );
+  });
+
+  it("drops on-ramp, Uniswap, OrgFundFactory and multisig claims", () => {
+    const text = JSON.stringify(demo);
+    expect(text).not.toMatch(/onramp|Uniswap|OrgFundFactory|multisig|Fiat/i);
+  });
+
+  it("describes test USDC from the demo wallet, the router and the stand-in contract", () => {
+    expect(demo[0].short).toContain("test USDC");
+    expect(demo[0].detail).toContain("demo wallet");
+    expect(demo[1].inactive).toBe(true);
+    expect(demo[2].contract).toBe("Eudaimonia · Router");
+    expect(demo[2].detail).toContain("stand-in");
+    expect(demo[2].feeOnHover?.label).toBe("Endaoment fee (stand-in)");
+    expect(demo[4].short).toContain("stand-in");
+    expect(demo[4].detail).toContain("testnet stand-in");
+  });
+
+  it("leaves default output unchanged when variant is omitted or 'default'", () => {
+    expect(buildStages({ ...demoInput, variant: "default" })).toEqual(
+      buildStages(demoInput),
+    );
+    expect(JSON.stringify(buildStages(demoInput))).toContain("OrgFundFactory");
+  });
+});
