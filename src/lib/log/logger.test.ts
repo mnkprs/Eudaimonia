@@ -113,4 +113,20 @@ describe("createLogger()", () => {
     expect(err.type).toBe("Error");
     expect(err.message).toBe("upstream boom");
   });
+
+  it("redacts the demo wallet private key under either key name", () => {
+    const { records, stream } = captureSink();
+    const log = createLogger(stream);
+
+    log.error(
+      {
+        DEMO_WALLET_PRIVATE_KEY: "0xLEAK_ONE",
+        env: { privateKey: "0xLEAK_TWO" },
+      },
+      "demo failure",
+    );
+
+    expect(JSON.stringify(records[0])).not.toContain("0xLEAK");
+    expect(records[0].DEMO_WALLET_PRIVATE_KEY).toBe("[REDACTED]");
+  });
 });

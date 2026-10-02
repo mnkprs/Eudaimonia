@@ -23,9 +23,28 @@ let sharedSessionStore: SessionStore | null = null;
  */
 function shouldUseVercelKv(): boolean {
   if (process.env.VITEST) return false;
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  return Boolean(url?.startsWith("https://") && token);
+  return isUsableKvConfig(
+    process.env.KV_REST_API_URL,
+    process.env.KV_REST_API_TOKEN,
+  );
+}
+
+/** Placeholder values shipped in `.env.local.example`; they point at nothing. */
+const EXAMPLE_KV_HOST = "example-kv.upstash.io";
+const EXAMPLE_KV_TOKEN = "replace_me";
+
+/**
+ * True for real https REST credentials. The `.env.local.example` placeholders
+ * are treated as unset so local dev falls back to in-memory instead of calling
+ * a nonexistent host.
+ */
+export function isUsableKvConfig(
+  url: string | undefined,
+  token: string | undefined,
+): boolean {
+  if (!url?.startsWith("https://") || !token) return false;
+  if (token === EXAMPLE_KV_TOKEN) return false;
+  return !url.includes(EXAMPLE_KV_HOST);
 }
 
 /** Lazily-built process-shared KvStore for on-ramp routing state. */
