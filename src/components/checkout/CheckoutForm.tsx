@@ -9,8 +9,8 @@ import {
 } from "@/lib/analytics/events";
 import { AmountSelector } from "@/components/checkout/AmountSelector";
 import {
-  INITIAL_FORM_STATE,
   checkoutFormReducer,
+  createInitialFormState,
   selectAmountError,
   selectEmailError,
   selectIsSubmittable,
@@ -20,6 +20,7 @@ import { DonorDetails } from "@/components/checkout/DonorDetails";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { PillButton } from "@/components/ui/PillButton";
 import { calculateBreakdown } from "@/lib/checkout/fees";
+import { ONRAMP_POLICY, type CheckoutPolicy } from "@/lib/checkout/policy";
 import type { CheckoutPayload } from "@/types/checkout";
 
 interface CheckoutFormProps {
@@ -27,6 +28,8 @@ interface CheckoutFormProps {
   campaignId: string;
   /** Hands the validated payload off to the on-ramp. Rejecting surfaces the error region. */
   onSubmit: (payload: CheckoutPayload) => Promise<void>;
+  /** Flow-specific rules (presets, email, fees, labels). Defaults to the on-ramp. */
+  policy?: CheckoutPolicy;
 }
 
 const FORM_LAYOUT =
@@ -41,13 +44,26 @@ const ERROR_TITLE =
 const ERROR_BODY =
   "mt-1 text-[12px] font-normal tracking-[-0.1px] text-ink/80";
 
+const FAILURE_REASSURANCE: Readonly<Record<CheckoutPolicy["mode"], string>> = {
+  onramp: "your card was not charged.",
+  demo: "no test funds were sent.",
+};
+
 function errorMessage(error: unknown): string {
   if (error instanceof Error && error.message.length > 0) return error.message;
   return "Unexpected error.";
 }
 
-export function CheckoutForm({ campaignId, onSubmit }: CheckoutFormProps) {
-  const [state, dispatch] = useReducer(checkoutFormReducer, INITIAL_FORM_STATE);
+export function CheckoutForm({
+  campaignId,
+  onSubmit,
+  policy = ONRAMP_POLICY,
+}: CheckoutFormProps) {
+  const [state, dispatch] = useReducer(
+    checkoutFormReducer,
+    policy,
+    createInitialFormState,
+  );
 
   // Debounce `amount_entered` to one event per selection session. Reset when
   // the donor switches between preset chips and the custom input so a fresh
@@ -67,17 +83,19 @@ export function CheckoutForm({ campaignId, onSubmit }: CheckoutFormProps) {
     dispatch({ type: "SET_CUSTOM_MODE", custom });
   }
 
-  const amountError = selectAmountError(state);
-  const emailError = selectEmailError(state);
-  const isSubmittable = selectIsSubmittable(state);
-  const breakdown = calculateBreakdown(state.amountCents);
+  const amountError = selectAmountError(state, policy);
+  const emailError = selectEmailError(state, policy);
+  const isSubmittable = selectIsSubmittable(state, policy);
+  const breakdown = calculateBreakdown(state.amountCents, {
+    includeCardProcessing: policy.showCardProcessingFee,
+  });
   const summaryState = state.status === "submitting" ? "submitting" : "ready";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     dispatch({ type: "SUBMIT_ATTEMPT" });
 
-    const payload = selectPayload(state, campaignId);
+    const payload = selectPayload(state, campaignId, policy);
     if (!payload) return;
 
     dispatch({ type: "SUBMIT_START" });
@@ -98,25 +116,30 @@ export function CheckoutForm({ campaignId, onSubmit }: CheckoutFormProps) {
           onValueChange={handleAmountChange}
           onCustomModeChange={handleCustomModeChange}
           error={amountError}
+          presetsCents={policy.presetsCents}
+          allowCustom={policy.allowCustomAmount}
         />
 
-        <DonorDetails
-          email={state.email}
-          note={state.note}
-          noteOpen={state.noteOpen}
-          onEmailChange={(email) => dispatch({ type: "SET_EMAIL", email })}
-          onNoteChange={(note) => dispatch({ type: "SET_NOTE", note })}
-          onNoteOpenChange={(open) =>
-            dispatch({ type: "SET_NOTE_OPEN", open })
-          }
-          emailError={emailError}
-        />
+        {policy.collectEmail && (
+          <DonorDetails
+            email={state.email}
+            note={state.note}
+            noteOpen={state.noteOpen}
+            onEmailChange={(email) => dispatch({ type: "SET_EMAIL", email })}
+            onNoteChange={(note) => dispatch({ type: "SET_NOTE", note })}
+            onNoteOpenChange={(open) =>
+              dispatch({ type: "SET_NOTE_OPEN", open })
+            }
+            emailError={emailError}
+          />
+        )}
 
         {state.submitError && (
           <div role="alert" className={ERROR_REGION}>
             <p className={ERROR_TITLE}>We couldn’t complete your donation.</p>
             <p className={ERROR_BODY}>
-              {state.submitError} — your card was not charged. Please try again.
+              {state.submitError} — {FAILURE_REASSURANCE[policy.mode]} Please try
+              again.
             </p>
           </div>
         )}
@@ -127,7 +150,9 @@ export function CheckoutForm({ campaignId, onSubmit }: CheckoutFormProps) {
           size="lg"
           disabled={!isSubmittable}
         >
-          {state.status === "submitting" ? "Processing payment" : "Donate"}
+          {state.status === "submitting"
+            ? policy.submittingLabel
+            : policy.submitLabel}
         </PillButton>
       </div>
 

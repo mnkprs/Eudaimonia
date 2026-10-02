@@ -43,6 +43,11 @@ const EMPTY_BREAKDOWN: FeeBreakdown = {
   cardProcessingFeeCents: 0,
 };
 
+export interface CalculateBreakdownOptions {
+  /** Show the card processing row (on-ramp). Defaults to true. */
+  readonly includeCardProcessing?: boolean;
+}
+
 /**
  * Compute the donor-facing fee breakdown for an entered amount. Returns a
  * frozen-shape object with both numeric totals (for math/CTA decisions) and
@@ -56,15 +61,20 @@ const EMPTY_BREAKDOWN: FeeBreakdown = {
  * - Card processing is shown to the donor for transparency but is NOT
  *   deducted from the charity's net (the processor takes it separately).
  */
-export function calculateBreakdown(grossCents: number): FeeBreakdown {
+export function calculateBreakdown(
+  grossCents: number,
+  options: CalculateBreakdownOptions = {},
+): FeeBreakdown {
+  const includeCardProcessing = options.includeCardProcessing ?? true;
   if (!Number.isFinite(grossCents) || grossCents <= 0) {
     return EMPTY_BREAKDOWN;
   }
 
   const eudaimoniaFeeCents = applyBps(grossCents, EUDAIMONIA_FEE_BPS);
   const endaomentFeeCents = applyBps(grossCents, ENDAOMENT_FEE_BPS);
-  const cardProcessingFeeCents =
-    applyBps(grossCents, CARD_PROCESSING_BPS) + CARD_PROCESSING_FLAT_CENTS;
+  const cardProcessingFeeCents = includeCardProcessing
+    ? applyBps(grossCents, CARD_PROCESSING_BPS) + CARD_PROCESSING_FLAT_CENTS
+    : 0;
   const netToCharityCents = clampNonNegative(
     grossCents - eudaimoniaFeeCents - endaomentFeeCents,
   );
@@ -90,13 +100,17 @@ export function calculateBreakdown(grossCents: number): FeeBreakdown {
       amountCents: endaomentFeeCents,
       muted: true,
     },
-    {
-      kind: "cardProcessing",
-      label: "Card processing",
-      sub: "2.90% + $0.30 · processor fee",
-      amountCents: cardProcessingFeeCents,
-      muted: true,
-    },
+    ...(includeCardProcessing
+      ? [
+          {
+            kind: "cardProcessing",
+            label: "Card processing",
+            sub: "2.90% + $0.30 · processor fee",
+            amountCents: cardProcessingFeeCents,
+            muted: true,
+          } satisfies FeeRow,
+        ]
+      : []),
     {
       kind: "net",
       label: "Net to charity",

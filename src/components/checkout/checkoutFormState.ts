@@ -13,6 +13,7 @@
  *   selectIsSubmittable predicate treats as submittable).
  */
 
+import { ONRAMP_POLICY, type CheckoutPolicy } from "@/lib/checkout/policy";
 import { validateAmount, validateEmail } from "@/lib/checkout/validation";
 import type { CheckoutPayload } from "@/types/checkout";
 
@@ -53,6 +54,18 @@ export const INITIAL_FORM_STATE: CheckoutFormState = {
   submitError: null,
 };
 
+/** Initial state for a policy; the demo preselects a preset, on-ramp starts empty. */
+export function createInitialFormState(policy: CheckoutPolicy): CheckoutFormState {
+  return { ...INITIAL_FORM_STATE, amountCents: policy.initialAmountCents };
+}
+
+function amountResult(state: CheckoutFormState, policy: CheckoutPolicy) {
+  // The reducer stores cents; validateAmount accepts a numeric dollar amount.
+  return validateAmount(state.amountCents / 100, {
+    maxCents: policy.maxAmountCents,
+  });
+}
+
 export function checkoutFormReducer(
   state: CheckoutFormState,
   action: CheckoutFormAction,
@@ -79,25 +92,33 @@ export function checkoutFormReducer(
   }
 }
 
-export function selectAmountError(state: CheckoutFormState): string | undefined {
+export function selectAmountError(
+  state: CheckoutFormState,
+  policy: CheckoutPolicy = ONRAMP_POLICY,
+): string | undefined {
   if (!state.submitted) return undefined;
-  // The reducer stores cents; validateAmount accepts a numeric dollar amount.
-  const result = validateAmount(state.amountCents / 100);
+  const result = amountResult(state, policy);
   return result.ok ? undefined : result.error;
 }
 
-export function selectEmailError(state: CheckoutFormState): string | undefined {
-  if (!state.submitted) return undefined;
+export function selectEmailError(
+  state: CheckoutFormState,
+  policy: CheckoutPolicy = ONRAMP_POLICY,
+): string | undefined {
+  if (!policy.collectEmail || !state.submitted) return undefined;
   const result = validateEmail(state.email);
   return result.ok ? undefined : result.error;
 }
 
-export function selectIsSubmittable(state: CheckoutFormState): boolean {
+export function selectIsSubmittable(
+  state: CheckoutFormState,
+  policy: CheckoutPolicy = ONRAMP_POLICY,
+): boolean {
   if (state.status === "submitting") return false;
   // The amount is the primary submission gate — without a valid amount there is
   // nothing to donate. Email validity stays a soft gate so donors can click and
   // discover the inline error per Phase 7 spec.
-  return validateAmount(state.amountCents / 100).ok;
+  return amountResult(state, policy).ok;
 }
 
 /**
@@ -108,9 +129,15 @@ export function selectIsSubmittable(state: CheckoutFormState): boolean {
 export function selectPayload(
   state: CheckoutFormState,
   campaignId: string,
+  policy: CheckoutPolicy = ONRAMP_POLICY,
 ): CheckoutPayload | null {
-  const amount = validateAmount(state.amountCents / 100);
+  const amount = amountResult(state, policy);
   if (!amount.ok) return null;
+
+  // The demo collects no donor data: empty email, no note.
+  if (!policy.collectEmail) {
+    return { campaignId, grossCents: amount.value, email: "" };
+  }
 
   const email = validateEmail(state.email);
   if (!email.ok) return null;

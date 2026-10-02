@@ -24,6 +24,8 @@ interface AmountSelectorProps {
   error?: string;
   /** Override the default presets — primarily for tests / future configurability. */
   presetsCents?: readonly number[];
+  /** Show the Custom chip and input. Defaults to true; the testnet demo disables it. */
+  allowCustom?: boolean;
 }
 
 const CURRENCY = "$";
@@ -45,6 +47,7 @@ export function AmountSelector({
   onCustomModeChange,
   error,
   presetsCents = DONATION_PRESETS_CENTS,
+  allowCustom = true,
 }: AmountSelectorProps) {
   const errorId = useId();
   const customInputId = useId();
@@ -72,7 +75,11 @@ export function AmountSelector({
     <div className={CONTAINER_CLASSES}>
       <FieldLabel
         htmlFor={customInputId}
-        hint="Choose a preset or set a custom amount"
+        hint={
+          allowCustom
+            ? "Choose a preset or set a custom amount"
+            : "Choose an amount"
+        }
       >
         Donation amount
       </FieldLabel>
@@ -88,17 +95,19 @@ export function AmountSelector({
           />
         ))}
 
-        <button
-          type="button"
-          onClick={handleCustomClick}
-          aria-pressed={customMode}
-          className={customChipClasses}
-        >
-          Custom
-        </button>
+        {allowCustom && (
+          <button
+            type="button"
+            onClick={handleCustomClick}
+            aria-pressed={customMode}
+            className={customChipClasses}
+          >
+            Custom
+          </button>
+        )}
       </div>
 
-      {customMode && (
+      {allowCustom && customMode && (
         <CustomAmountInput
           id={customInputId}
           valueCents={valueCents}
