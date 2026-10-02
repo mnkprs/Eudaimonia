@@ -9,6 +9,58 @@ The deploy script (`script/Deploy.s.sol`) is fully unit-tested
 (`test/Deploy.t.sol`) via its `_deploy` seam, so the wiring is proven before
 any broadcast.
 
+## 0. Public testnet demo stack (Epic 8 — what the live demo runs)
+
+The portfolio demo ([ADR 0003](../docs/adr/0003-testnet-demo.md)) does not use
+the steps below. It deploys the router **plus testnet stand-ins for Endaoment**
+in one broadcast, because Endaoment's Base Sepolia entities can't accept
+Circle's test USDC. `script/DeployTestnetDemo.s.sol` refuses every chain except
+Base Sepolia, and the stand-in constructors refuse Ethereum and Base mainnet.
+
+Roles (local Foundry keystores; passwords in `~/.foundry/pw/<name>`, chmod 600):
+
+| Keystore | Role |
+|---|---|
+| `eudaimonia-deployer` | Broadcasts, owns the router, manages the stand-ins, receives the stand-in Endaoment fee |
+| `eudaimonia-treasury` | Receives the 1% platform fee |
+| `eudaimonia-demo` | The server-side donor (`DEMO_WALLET_PRIVATE_KEY` on Vercel — testnet only) |
+
+```sh
+cd contracts
+export USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+export TREASURY_ADDRESS=$(cast wallet address --account eudaimonia-treasury --password-file ~/.foundry/pw/eudaimonia-treasury)
+export OWNER_ADDRESS=$(cast wallet address --account eudaimonia-deployer --password-file ~/.foundry/pw/eudaimonia-deployer)
+export BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
+
+forge script script/DeployTestnetDemo.s.sol:DeployTestnetDemo \
+  --rpc-url base_sepolia \
+  --account eudaimonia-deployer --password-file ~/.foundry/pw/eudaimonia-deployer \
+  --broadcast --slow \
+  --verify --verifier blockscout --verifier-url https://base-sepolia.blockscout.com/api/
+```
+
+The script logs ready-to-paste env lines (`NEXT_PUBLIC_ROUTER_ADDRESS_BASE_SEPOLIA=…`,
+`STANDIN_<CHARITY>=…`). Deployed addresses and tx hashes are recorded in
+[`deployments/base-sepolia.json`](deployments/base-sepolia.json); the app's
+Base Sepolia org addresses live in `src/lib/endaoment/orgs.ts`.
+
+**After deploying:** fund the demo wallet with test USDC and a little ETH, and
+have it approve the router once (`approve(router, max)`); the demo API never
+sends approvals. Verify the deployment with `DeployedRouterFork.t.sol` (§6)
+using `EXPECTED_USDC=0x036CbD53842c5426634e7929541eC2318f3dCF7e`.
+
+**Recycling test USDC** (faucets drip 20 USDC per 2 h): each stand-in's
+manager can move its balance back to the demo wallet:
+
+```sh
+cast send <org-stand-in> "withdraw(address,uint256)" <demo-wallet> <amount-6dp> \
+  --rpc-url $BASE_SEPOLIA_RPC_URL \
+  --account eudaimonia-deployer --password-file ~/.foundry/pw/eudaimonia-deployer
+```
+
+The treasury and the deployer (stand-in fee recipient) can transfer their
+test USDC back the same way with a plain ERC-20 `transfer`.
+
 ## Prerequisites
 
 - `forge` on PATH (`C:\Users\<you>\.foundry\bin` on this machine).
