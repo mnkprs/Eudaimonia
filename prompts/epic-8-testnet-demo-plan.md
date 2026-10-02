@@ -1,7 +1,7 @@
 # Epic 8 — Public Testnet Demo — TDD Plan
 
 > **GitHub issue:** [#69 — Epic 8 — Public testnet demo](https://github.com/mnkprs/Eudaimonia/issues/69)
-> **Status (2026-10-01):** IN PROGRESS — Phase 0 done (branch + issue + plan). Testnet keystores created locally (`~/.foundry/keystores/eudaimonia-{deployer,treasury,demo}`, passwords in `~/.foundry/pw/`, chmod 600): deployer `0x67Ff1580b257be4dd8C078D8a4330be4464543B8`, treasury `0xEFDc4E245a88e68226319E90ccA490E4c3A4adad`, demo wallet `0x40436fc2573527F7B25cAB98e9d2D560a77d7A76`. Waiting on the owner to fund the deployer from faucets (Phase 2). Resume at **Phase 1** (stand-in contracts, TDD).
+> **Status (2026-10-02):** IN PROGRESS — Phases 0, 1, 4, 5, 6 DONE and the code half of Phase 7 (landing sample-receipt links; `SAMPLE_RECEIPT_TX_HASHES` still empty) plus most of Phase 10 docs (ADR 0003, DEPLOY.md §0, backlog, runbook demo ops). Verified: forge 70 passed / 5 skipped (100% coverage on `src/testnet/*` + `DeployTestnetDemo.s.sol`), vitest 1122 passed, `tsc` + `eslint` clean, `next build` ok. Testnet keystores (agent-created, passwords in `~/.foundry/pw/`): deployer `0x67Ff1580b257be4dd8C078D8a4330be4464543B8`, treasury `0xEFDc4E245a88e68226319E90ccA490E4c3A4adad`, demo wallet `0x40436fc2573527F7B25cAB98e9d2D560a77d7A76`. **Blocked on Phase 2:** owner funds the deployer (20 Base Sepolia USDC + ≥0.0005 ETH). Resume at **Phase 3** (live deploy), then Phase 7.1 (`orgs.ts` stand-in addresses) / 7.3 (sample hashes), 8, 9, 10 (README, #4/#5, PR).
 > **Branch:** `epic-8-testnet-demo` (off `main` @ `524e723`)
 > **Depends on:** Epic 4 router (unchanged), Epic 5/6 receipt pipeline.
 
