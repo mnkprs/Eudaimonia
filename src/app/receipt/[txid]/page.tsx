@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { base, baseSepolia } from "wagmi/chains";
 
 import { TrackMount } from "@/components/analytics/TrackMount";
 import { ReceiptView } from "@/components/receipt/ReceiptView";
+import { resolveAppChainId } from "@/lib/chain";
 import { loadReceiptForMetadata } from "@/lib/receipt/loadReceiptForMetadata";
 
 // ---------------------------------------------------------------------------
@@ -33,8 +33,7 @@ export async function generateMetadata({
 }: ReceiptPageProps): Promise<Metadata> {
   const { txid } = await params;
 
-  const chainId =
-    process.env.NEXT_PUBLIC_CHAIN === "base" ? base.id : baseSepolia.id;
+  const chainId = resolveAppChainId();
 
   const receipt = await loadReceiptForMetadata(
     txid as `0x${string}`,
@@ -101,7 +100,7 @@ export default async function ReceiptPage({ params }: ReceiptPageProps) {
   return (
     <main>
       <TrackMount event={{ name: "receipt_viewed" }} />
-      <ReceiptView txid={txid} />
+      <ReceiptView txid={txid} chainId={resolveAppChainId()} />
     </main>
   );
 }

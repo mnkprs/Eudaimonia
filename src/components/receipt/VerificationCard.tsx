@@ -12,19 +12,28 @@ interface VerificationCardProps {
   /** Render the bottom fee disclosure strip. */
   showFeeStrip?: boolean;
   /**
-   * BaseScan URL for the Endaoment org address, e.g.
-   * "https://basescan.org/address/0x…". Wired from `getCharity().baseScanUrl`
-   * by the receipt route. When omitted the VerifyLink falls back to "#".
+   * BaseScan URL for the transaction, e.g. "https://basescan.org/tx/0x…".
+   * When omitted the "Open on BaseScan" VerifyLink falls back to "#".
    */
   baseScanUrl?: string;
+  /**
+   * BaseScan URL for the org address. When provided the Endaoment badge in the
+   * Proof header becomes an anchor to the on-chain record.
+   */
+  orgBaseScanUrl?: string;
 }
 
-export function VerificationCard({ data, showFeeStrip = true, baseScanUrl }: VerificationCardProps) {
+export function VerificationCard({
+  data,
+  showFeeStrip = true,
+  baseScanUrl,
+  orgBaseScanUrl,
+}: VerificationCardProps) {
   return (
     <section style={{ maxWidth: 1240, margin: "0 auto", padding: "0 64px 56px" }}>
       <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
         <EyebrowLabel>Proof</EyebrowLabel>
-        <EndaomentBadge size="sm" />
+        <EndaomentBadge size="sm" href={orgBaseScanUrl} />
       </div>
       <div
         style={{

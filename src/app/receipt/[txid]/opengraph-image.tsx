@@ -10,8 +10,8 @@
  */
 
 import { ImageResponse } from "next/og";
-import { base, baseSepolia } from "wagmi/chains";
 
+import { resolveAppChainId } from "@/lib/chain";
 import { loadReceiptForMetadata } from "@/lib/receipt/loadReceiptForMetadata";
 
 // ---------------------------------------------------------------------------
@@ -42,8 +42,7 @@ interface OgImageProps {
 export default async function OgImage({ params }: OgImageProps): Promise<ImageResponse> {
   const { txid } = await params;
 
-  const chainId =
-    process.env.NEXT_PUBLIC_CHAIN === "base" ? base.id : baseSepolia.id;
+  const chainId = resolveAppChainId();
 
   let receipt: Awaited<ReturnType<typeof loadReceiptForMetadata>> = null;
   try {
