@@ -10,7 +10,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
-import { ERC20_ABI, ROUTER_DONATE_ABI } from "./abi";
+import { ROUTER_DONATE_ABI } from "./abi";
 import { createDemoChainGateway } from "./chain-gateway";
 
 const ANVIL_KEY =
@@ -139,9 +139,5 @@ describe("createDemoChainGateway", () => {
       gatewayFor(node).sendDonation({ org: ORG, amount: 1n, nonce: 0 }),
     ).rejects.toThrow();
     expect(node.rawTxs).toHaveLength(0);
-  });
-
-  it("uses the ERC-20 ABI for balance reads", () => {
-    expect(ERC20_ABI).toBeDefined();
   });
 });
