@@ -9,17 +9,24 @@ import { NavBar } from "@/components/landing/NavBar";
 
 const HREF = `/receipt/0x${"c".repeat(64)}`;
 
+/** Opening tag of the last <a …> before `text` — the element that holds it. */
+function anchorTagBefore(html: string, text: string): string {
+  const textIndex = html.indexOf(text);
+  const start = html.lastIndexOf("<a", textIndex);
+  return html.slice(start, html.indexOf(">", start) + 1);
+}
+
 describe("example receipt links (Epic 8)", () => {
   test("Hero links the example-receipt CTA when a sample exists", () => {
     const html = renderToString(<Hero exampleReceiptHref={HREF} />);
-    expect(html).toContain(`href="${HREF}"`);
-    expect(html).not.toContain('aria-disabled="true"');
+    const cta = anchorTagBefore(html, "See an example receipt");
+    expect(cta).toContain(`href="${HREF}"`);
+    expect(cta).not.toContain('aria-disabled="true"');
   });
 
   test("Hero keeps the CTA disabled without a sample", () => {
     const html = renderToString(<Hero exampleReceiptHref={null} />);
-    expect(html).toContain("See an example receipt");
-    expect(html).toContain('aria-disabled="true"');
+    expect(anchorTagBefore(html, "See an example receipt")).toContain('aria-disabled="true"');
   });
 
   test("Hero trust row says testnet demo and drops card/tax claims in demo mode", () => {

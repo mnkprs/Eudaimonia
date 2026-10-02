@@ -16,8 +16,8 @@ describe("NavBar", () => {
     expect(html).toContain('aria-label="Eudaimonia — home"');
   });
 
-  test("renders the four primary section links", () => {
-    const html = renderToString(<NavBar />);
+  test("renders the four primary section links when a sample receipt exists", () => {
+    const html = renderToString(<NavBar receiptsHref="/receipt/0xabc" />);
     expect(html).toContain("Causes");
     expect(html).toContain("How it works");
     expect(html).toContain("Receipts");

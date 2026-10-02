@@ -2,7 +2,12 @@ import { ArrowRight } from "@/components/ui/ArrowRight";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { PillButton } from "@/components/ui/PillButton";
 
-export function CreamBand() {
+interface CreamBandProps {
+  /** Path of a real sample receipt; the CTA stays disabled while there is none. */
+  exampleReceiptHref?: string | null;
+}
+
+export function CreamBand({ exampleReceiptHref = null }: CreamBandProps = {}) {
   return (
     <section
       aria-labelledby="cream-band-heading"
@@ -29,7 +34,11 @@ export function CreamBand() {
             ever need to know.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <PillButton variant="dark" href="#receipt-example">
+            <PillButton
+              variant="dark"
+              href={exampleReceiptHref ?? "#receipt-example"}
+              disabled={exampleReceiptHref === null}
+            >
               See an example receipt <ArrowRight color="#fff" />
             </PillButton>
             <PillButton variant="ghost" href="#fees">

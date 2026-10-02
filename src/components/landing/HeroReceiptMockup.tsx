@@ -13,7 +13,7 @@ const STAGES = [
   { label: "Settled", time: "17:34:07" },
 ] as const;
 
-function MiniTracker() {
+function MiniTracker({ exampleReceiptHref }: { exampleReceiptHref: string | null }) {
   return (
     <div>
       <div className="relative grid grid-cols-4 gap-2">
@@ -58,14 +58,24 @@ function MiniTracker() {
             {TX_HASH}
           </Mono>
         </div>
-        <a
-          href="#example-receipt"
-          aria-disabled="true"
-          className="inline-flex items-center gap-1 text-xs tracking-[-0.1px] no-underline aria-disabled:opacity-60"
-          style={{ color: colors.primary }}
-        >
-          Open on BaseScan <ArrowRight color={colors.primary} />
-        </a>
+        {exampleReceiptHref ? (
+          <a
+            href={exampleReceiptHref}
+            className="inline-flex items-center gap-1 text-xs tracking-[-0.1px] no-underline"
+            style={{ color: colors.primary }}
+          >
+            Open example receipt <ArrowRight color={colors.primary} />
+          </a>
+        ) : (
+          <a
+            href="#example-receipt"
+            aria-disabled="true"
+            className="inline-flex items-center gap-1 text-xs tracking-[-0.1px] no-underline aria-disabled:opacity-60"
+            style={{ color: colors.primary }}
+          >
+            Open on BaseScan <ArrowRight color={colors.primary} />
+          </a>
+        )}
       </div>
     </div>
   );
@@ -76,7 +86,12 @@ function MiniTracker() {
  * (browser chrome → donor headline → fee split → 4-stage tracker). It is the
  * hero's depth medium — the brand's argument is "look at the actual product."
  */
-export function HeroReceiptMockup() {
+interface HeroReceiptMockupProps {
+  /** Path of a real sample receipt; the mock's link stays inert while there is none. */
+  exampleReceiptHref?: string | null;
+}
+
+export function HeroReceiptMockup({ exampleReceiptHref = null }: HeroReceiptMockupProps = {}) {
   return (
     <div
       className="mt-16 max-w-[1080px] overflow-hidden rounded-2xl border border-rule bg-white"
@@ -140,7 +155,7 @@ export function HeroReceiptMockup() {
           </div>
         </div>
 
-        <MiniTracker />
+        <MiniTracker exampleReceiptHref={exampleReceiptHref} />
       </div>
     </div>
   );

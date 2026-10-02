@@ -2,7 +2,12 @@ import { ArrowRight } from "@/components/ui/ArrowRight";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { PillButton } from "@/components/ui/PillButton";
 
-export function ClosingCTA() {
+interface ClosingCTAProps {
+  /** Path of a real sample receipt; the secondary link is hidden while there is none. */
+  exampleReceiptHref?: string | null;
+}
+
+export function ClosingCTA({ exampleReceiptHref = null }: ClosingCTAProps = {}) {
   return (
     <section
       aria-labelledby="closing-cta-heading"
@@ -36,13 +41,15 @@ export function ClosingCTA() {
             <PillButton variant="primary" size="lg" href="#causes">
               Choose a cause <ArrowRight color="#fff" />
             </PillButton>
-            <a
-              href="#receipt-example"
-              className="inline-flex items-center gap-1 px-4 py-2.5 text-[15px] text-white/85 no-underline hover:text-white"
-              style={{ letterSpacing: "-0.1px" }}
-            >
-              See a receipt first <ArrowRight color="currentColor" />
-            </a>
+            {exampleReceiptHref && (
+              <a
+                href={exampleReceiptHref}
+                className="inline-flex items-center gap-1 px-4 py-2.5 text-[15px] text-white/85 no-underline hover:text-white"
+                style={{ letterSpacing: "-0.1px" }}
+              >
+                See a receipt first <ArrowRight color="currentColor" />
+              </a>
+            )}
           </div>
         </div>
       </div>
