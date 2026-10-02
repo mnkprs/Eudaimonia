@@ -20,7 +20,8 @@ contract RouterWithStandInTest is Test {
     uint256 internal constant ORG_CREDIT = 975_150;
 
     bytes32 internal constant TRANSFER_TOPIC = keccak256("Transfer(address,address,uint256)");
-    bytes32 internal constant DONATION_ROUTED_TOPIC = keccak256("DonationRouted(address,address,uint256,uint256,uint256)");
+    bytes32 internal constant DONATION_ROUTED_TOPIC =
+        keccak256("DonationRouted(address,address,uint256,uint256,uint256)");
 
     MockERC20 internal token;
     TransparentDonationRouter internal router;
@@ -36,7 +37,9 @@ contract RouterWithStandInTest is Test {
         donor = makeAddr("demo-wallet");
 
         EndaomentRegistryStandIn registry = new EndaomentRegistryStandIn(endaomentFeeRecipient);
-        org = new EndaomentOrgStandIn(IERC20(address(token)), registry, address(this), "TESTNET STAND-IN (not Endaoment): PCRF");
+        org = new EndaomentOrgStandIn(
+            IERC20(address(token)), registry, address(this), "TESTNET STAND-IN (not Endaoment): PCRF"
+        );
         router = new TransparentDonationRouter(address(token), treasury, address(this));
         router.setOrgAllowed(address(org), true);
 
