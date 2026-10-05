@@ -1,4 +1,5 @@
 import { EndaomentBadge } from "@/components/brand/EndaomentBadge";
+import { trimDecimals } from "@/lib/receipt/format";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { Mono } from "@/components/ui/Mono";
@@ -205,5 +206,5 @@ function computeCharityReceived(data: ReceiptData): string {
   if (!Number.isFinite(donor) || !Number.isFinite(endaoment) || !Number.isFinite(platform)) {
     return data.amount;
   }
-  return (donor - endaoment - platform).toFixed(3);
+  return trimDecimals((donor - endaoment - platform).toFixed(6));
 }

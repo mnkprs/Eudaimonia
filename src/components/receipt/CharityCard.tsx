@@ -1,4 +1,5 @@
 import { EndaomentBadge } from "@/components/brand/EndaomentBadge";
+import { deriveMonogram } from "@/lib/receipt/format";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { isTestnetNetwork } from "@/lib/chain";
 import { colors } from "@/lib/tokens";
@@ -15,13 +16,6 @@ interface CharityCardProps {
    * "Verified by Endaoment" badge becomes an anchor to the on-chain record.
    */
   baseScanUrl?: string;
-}
-
-function deriveMonogram(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "··";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
 }
 
 export function CharityCard({ data, monogram, href = "#", baseScanUrl }: CharityCardProps) {

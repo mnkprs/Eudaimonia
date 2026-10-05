@@ -1,4 +1,5 @@
 import { Mono } from "@/components/ui/Mono";
+import { deriveMonogram } from "@/lib/receipt/format";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { colors } from "@/lib/tokens";
 import type { ReceiptData } from "@/types/receipt";
@@ -201,7 +202,7 @@ export function Hero({ data }: HeroProps) {
               letterSpacing: "0.05em",
             }}
           >
-            BW
+            {deriveMonogram(data.charity)}
           </div>
           <div style={{ textAlign: "left" }}>
             <div

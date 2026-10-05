@@ -140,6 +140,7 @@ function applyTestnetDemoCopy(
       detail:
         "This demo spends test USDC directly, so no card payment, on-chain swap or currency conversion took place.",
       contract: "None · Test USDC",
+      inactiveLabel: "Not needed",
     },
     {
       ...routed,
@@ -224,6 +225,7 @@ function buildDefaultStages(input: BuildStagesInput): Stage[] {
         addressLabel: "Provider",
         detail: OFF_CHAIN_SWAP_DETAIL,
         contract: "Off-chain · Onramp",
+        inactiveLabel: "Off-chain",
         inactive: true,
       }
     : {

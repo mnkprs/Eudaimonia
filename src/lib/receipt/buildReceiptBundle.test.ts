@@ -149,14 +149,14 @@ describe("buildReceiptBundle", () => {
   // -------------------------------------------------------------------------
 
   describe("D2 — Fee fields from on-chain values", () => {
-    it("ReceiptData.platformFee is the Eudaimonia 1% fee (0.010000 USDC)", () => {
-      // EUDAIMONIA_FEE = 10_000n → formatUnits → "0.01", padded = "0.010000"
-      expect(buildValid().data.platformFee).toBe("0.010000");
+    it("ReceiptData.platformFee is the Eudaimonia 1% fee (0.01 USDC)", () => {
+      // EUDAIMONIA_FEE = 10_000n → "0.010000" → display-trimmed to "0.01"
+      expect(buildValid().data.platformFee).toBe("0.01");
     });
 
-    it("ReceiptData.endaomentFee is the Endaoment protocol fee (0.014850 USDC)", () => {
-      // ENDAOMENT_FEE = 14_850n → formatUnits → "0.01485", padded = "0.014850"
-      expect(buildValid().data.endaomentFee).toBe("0.014850");
+    it("ReceiptData.endaomentFee is the Endaoment protocol fee (0.01485 USDC)", () => {
+      // ENDAOMENT_FEE = 14_850n → "0.014850" → display-trimmed to "0.01485"
+      expect(buildValid().data.endaomentFee).toBe("0.01485");
     });
 
     it("stage 4 (Eudaimonia fee) is ACTIVE for a router tx", () => {

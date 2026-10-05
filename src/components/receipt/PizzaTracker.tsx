@@ -23,9 +23,6 @@ interface PizzaTrackerProps {
   chainId?: number;
 }
 
-const INACTIVE_COPY =
-  "Future Eudaimonia donations will route a 1% platform fee here. This receipt is for an existing Endaoment donation, so no Eudaimonia fee was charged.";
-
 export function PizzaTracker({
   stages,
   variant = "card",
@@ -203,7 +200,7 @@ function StageColumn({
               fontStyle: "italic",
             }}
           >
-            {INACTIVE_COPY}
+            {stage.detail}
           </p>
         ) : (
           <StageBody
@@ -344,7 +341,7 @@ function StageHeader({ stage, isInactive }: StageHeaderProps) {
             padding: "2px 6px",
           }}
         >
-          Future
+          {stage.inactiveLabel ?? "Future"}
         </span>
       )}
     </div>
