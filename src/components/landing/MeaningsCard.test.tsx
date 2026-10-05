@@ -30,8 +30,8 @@ describe("MeaningsCard", () => {
     expect(html).not.toContain("u00ED");
   });
 
-  test('renders a "hear it" affordance', () => {
+  test('MVP: no inactive "hear it" audio button', () => {
     const html = renderToString(<MeaningsCard />);
-    expect(html).toContain("hear it");
+    expect(html).not.toContain("hear it");
   });
 });

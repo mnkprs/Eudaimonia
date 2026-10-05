@@ -15,7 +15,7 @@ interface VerificationCardProps {
   showFeeStrip?: boolean;
   /**
    * BaseScan URL for the transaction, e.g. "https://basescan.org/tx/0x…".
-   * When omitted the "Open on BaseScan" VerifyLink falls back to "#".
+   * When omitted the "Open on BaseScan" label renders inert (no dead link).
    */
   baseScanUrl?: string;
   /**
@@ -59,7 +59,7 @@ export function VerificationCard({
             <CopyButton value={data.txid} />
           </div>
           <div style={{ marginTop: 12 }}>
-            <VerifyLink label="Open on BaseScan ↗" href={baseScanUrl ?? "#"} />
+            <VerifyLink label="Open on BaseScan ↗" href={baseScanUrl} />
           </div>
         </div>
 

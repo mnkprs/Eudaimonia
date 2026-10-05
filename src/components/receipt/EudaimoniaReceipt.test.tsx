@@ -60,3 +60,14 @@ describe("EudaimoniaReceipt explorer links", () => {
     expect(html).not.toContain("/address/0x10e9");
   });
 });
+
+describe("EudaimoniaReceipt — Visit charity", () => {
+  test("links the charity's own website, looked up by EIN", () => {
+    const wck: ReceiptBundle = {
+      ...BUNDLE,
+      data: { ...BUNDLE.data, charity: "World Central Kitchen", ein: "27-3521132" },
+    };
+    const html = renderToString(<EudaimoniaReceipt bundle={wck} chainId={baseSepolia.id} />);
+    expect(html).toContain('href="https://wck.org"');
+  });
+});

@@ -16,6 +16,10 @@ export function ShareRow({
   shareUrl,
   shareText = "Verified donation receipt on Eudaimonia.",
 }: ShareRowProps) {
+  // Shares must carry the receipt link; the receipt only renders client-side,
+  // so the current page URL is the receipt URL when none is passed.
+  const url =
+    shareUrl ?? (typeof window !== "undefined" ? window.location.href : undefined);
   return (
     <section style={{ maxWidth: 1240, margin: "0 auto", padding: "8px 64px 88px" }}>
       <div
@@ -51,17 +55,17 @@ export function ShareRow({
           </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <CopyLinkButton shareUrl={shareUrl} />
+          <CopyLinkButton shareUrl={url} />
           <ShareIntentButton
             label="Twitter"
             channel="twitter"
-            href={twitterIntent(shareText, shareUrl)}
+            href={twitterIntent(shareText, url)}
             icon={<TwitterIcon />}
           />
           <ShareIntentButton
             label="WhatsApp"
             channel="whatsapp"
-            href={whatsappIntent(shareText, shareUrl)}
+            href={whatsappIntent(shareText, url)}
             icon={<WhatsAppIcon />}
           />
         </div>

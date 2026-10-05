@@ -8,6 +8,7 @@ const sampleCampaign: Campaign = {
   id: "pcrf",
   name: "Palestine Children's Relief Fund",
   ein: "93-1057665",
+  website: "https://www.pcrf.net",
   tag: "Urgent · Gaza",
   mission:
     "Medical aid, trauma care, and surgical missions for injured children across Gaza and the West Bank.",

@@ -41,7 +41,7 @@ export function CreamBand({ exampleReceiptHref = null }: CreamBandProps = {}) {
             >
               See an example receipt <ArrowRight color="#fff" />
             </PillButton>
-            <PillButton variant="ghost" href="#fees">
+            <PillButton variant="ghost" href="/fee-policy">
               Read the fee policy <ArrowRight />
             </PillButton>
           </div>

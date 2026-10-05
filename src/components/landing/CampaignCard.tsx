@@ -76,12 +76,6 @@ export function CampaignCard({ campaign, stats }: CampaignCardProps) {
           >
             Donate
           </PillButton>
-          <a
-            href={`/charity/${campaign.id}`}
-            className="text-[13px] tracking-[-0.1px] text-ink no-underline opacity-70 hover:opacity-100"
-          >
-            View charity →
-          </a>
         </div>
       </div>
     </article>

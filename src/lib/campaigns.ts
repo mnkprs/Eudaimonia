@@ -13,6 +13,7 @@ export const CAMPAIGNS: readonly Campaign[] = [
     id: "pcrf",
     name: "Palestine Children's Relief Fund",
     ein: "93-1057665",
+    website: "https://www.pcrf.net",
     tag: "Urgent · Gaza",
     mission:
       "Medical aid, trauma care, and surgical missions for injured children across Gaza and the West Bank.",
@@ -24,6 +25,7 @@ export const CAMPAIGNS: readonly Campaign[] = [
     id: "wck",
     name: "World Central Kitchen",
     ein: "27-3521132",
+    website: "https://wck.org",
     tag: "Active · Ukraine, Sudan, Gaza",
     mission:
       "Hot meals on the ground within hours of any crisis — wherever cooks can stand up a kitchen.",
@@ -35,6 +37,7 @@ export const CAMPAIGNS: readonly Campaign[] = [
     id: "directrelief",
     name: "Direct Relief",
     ein: "95-1831116",
+    website: "https://www.directrelief.org",
     tag: "Recurring · Global",
     mission:
       "Medicine and supplies routed to community clinics in 90+ countries, including disaster response.",
@@ -55,6 +58,11 @@ export function getCampaigns(): Campaign[] {
 
 export function getCampaignById(id: string): Campaign | undefined {
   const found = CAMPAIGNS.find((campaign) => campaign.id === id);
+  return found ? { ...found } : undefined;
+}
+
+export function getCampaignByEin(ein: string): Campaign | undefined {
+  const found = CAMPAIGNS.find((campaign) => campaign.ein === ein);
   return found ? { ...found } : undefined;
 }
 

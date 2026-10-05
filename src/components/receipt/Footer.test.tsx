@@ -25,3 +25,11 @@ describe("Footer", () => {
     expect(html).toContain('href="/fee-policy"');
   });
 });
+
+describe("Footer links (MVP)", () => {
+  test("has no dead # links and links the public source code", () => {
+    const html = renderToString(<Footer network="Base Sepolia" />);
+    expect(html).not.toContain('href="#"');
+    expect(html).toContain('href="https://github.com/mnkprs/Eudaimonia"');
+  });
+});

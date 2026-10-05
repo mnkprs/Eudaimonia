@@ -100,3 +100,18 @@ describe("CharityCard on Base Sepolia", () => {
     expect(html).not.toContain("Testnet stand-in");
   });
 });
+
+describe("CharityCard — Visit charity (MVP)", () => {
+  test("omits the button when no charity website is known (never a dead # link)", () => {
+    const html = renderToString(<CharityCard data={FIXTURE} />);
+    expect(html).not.toContain("Visit charity");
+    expect(html).not.toContain('href="#"');
+  });
+
+  test("links to the charity website in a new tab when provided", () => {
+    const html = renderToString(<CharityCard data={FIXTURE} href="https://wck.org" />);
+    expect(html).toContain('href="https://wck.org"');
+    expect(html).toContain("Visit charity");
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+});

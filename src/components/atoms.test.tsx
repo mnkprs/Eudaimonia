@@ -47,7 +47,7 @@ describe("ui atoms", () => {
   });
 
   test("VerifyLink renders an anchor with the default BaseScan label and inline svg chevron", () => {
-    const html = renderToString(<VerifyLink />);
+    const html = renderToString(<VerifyLink href="https://basescan.org/tx/0x1" />);
     expect(html).toContain("<a");
     expect(html).toContain("Verify on BaseScan");
     expect(html).toContain("<svg");

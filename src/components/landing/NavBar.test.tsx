@@ -21,12 +21,24 @@ describe("NavBar", () => {
     expect(html).toContain("Causes");
     expect(html).toContain("How it works");
     expect(html).toContain("Receipts");
-    expect(html).toContain("For nonprofits");
   });
 
-  test("Donate CTA links to /donate", () => {
+  test("MVP: no sign-in and no 'For nonprofits' (neither exists)", () => {
+    const html = renderToString(<NavBar receiptsHref="/receipt/0xabc" />);
+    expect(html).not.toContain("Sign in");
+    expect(html).not.toContain("/sign-in");
+    expect(html).not.toContain("For nonprofits");
+  });
+
+  test("section links are root-anchored so they work from every page", () => {
     const html = renderToString(<NavBar />);
-    expect(html).toContain('href="/donate"');
+    expect(html).toContain('href="/#causes"');
+    expect(html).toContain('href="/#how-it-works"');
+  });
+
+  test("Donate CTA links to the causes section (there is no /donate index)", () => {
+    const html = renderToString(<NavBar />);
+    expect(html).not.toContain('href="/donate"');
     expect(html).toContain("Donate");
   });
 });

@@ -106,8 +106,17 @@ describe("ProcessingScreen — footer", () => {
   test("renders the wordmark links and session id", () => {
     const html = render();
     expect(html).toContain("What is Eudaimonia?");
-    expect(html).toContain("Contact");
+    expect(html).toContain("Report a problem");
     expect(html).toContain("cos_test_123");
     expect(html).toContain("non-custodial donation router");
+  });
+});
+
+describe("ProcessingScreen — footer links (MVP)", () => {
+  test("has no dead # links", () => {
+    const html = render();
+    expect(html).not.toContain('href="#"');
+    expect(html).toContain('href="/#how-it-works"');
+    expect(html).toContain("https://github.com/mnkprs/Eudaimonia/issues");
   });
 });

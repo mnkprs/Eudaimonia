@@ -60,3 +60,21 @@ describe("example receipt links (Epic 8)", () => {
     expect(without).not.toContain('href="#receipts"');
   });
 });
+
+describe("MVP link targets", () => {
+  test("cause cards have no 'View charity' link (there are no charity pages)", async () => {
+    const { CampaignCard } = await import("@/components/landing/CampaignCard");
+    const { getCampaigns } = await import("@/lib/campaigns");
+    const html = renderToString(<CampaignCard campaign={getCampaigns()[0]!} />);
+    expect(html).not.toContain("View charity");
+    expect(html).not.toContain("/charity/");
+  });
+
+  test("fee-policy links go to the /fee-policy page, not a missing #fees anchor", async () => {
+    const { HowItWorks } = await import("@/components/landing/HowItWorks");
+    for (const html of [renderToString(<HowItWorks />), renderToString(<CreamBand />)]) {
+      expect(html).toContain('href="/fee-policy"');
+      expect(html).not.toContain('href="#fees"');
+    }
+  });
+});

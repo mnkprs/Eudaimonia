@@ -30,7 +30,7 @@ describe("Hero", () => {
   test("renders the rotating meanings card", () => {
     const html = renderToString(<Hero />);
     expect(html).toContain("/pronounce");
-    expect(html).toContain("hear it");
+    expect(html).not.toContain("hear it");
   });
 
   test("composites the receipt product mock", () => {

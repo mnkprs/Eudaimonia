@@ -6,6 +6,7 @@ import { ArrowRight } from "@/components/ui/ArrowRight";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { PillButton } from "@/components/ui/PillButton";
+import { ISSUES_URL } from "@/lib/links";
 import { colors } from "@/lib/tokens";
 
 /**
@@ -13,7 +14,7 @@ import { colors } from "@/lib/tokens";
  *
  * Four variants by failed segment. The keystone is the 2-column "what was
  * happening" card: donor context (left) vs. money status (right). The
- * `processing_render_error` variant promotes `/status/[sessionId]` so the
+ * `processing_render_error` variant promotes `/processing/[sessionId]` so the
  * donor can recover. The other three render a calm "no active donation in
  * flight" pill.
  *
@@ -49,7 +50,7 @@ const VARIANTS: Record<ErrorVariant, VariantContent> = {
     pillLabel: "Something broke",
     eyebrow: "Unexpected error · Recovery available",
     actionEyebrow: "What you were doing",
-    actionTitle: "Browsing Philotimo.",
+    actionTitle: "Browsing Eudaimonia.",
     actionBody:
       "A page hit an unexpected state while rendering. The funnel itself is unaffected — you can keep going from any other route, including the home page.",
     moneyEyebrow: "Where your money is",
@@ -265,7 +266,7 @@ function ErrorHero({
           }}
         >
           A page failed to render. No funds move when that happens &mdash;
-          every cent on Philotimo moves through a signed transaction, never
+          every cent on Eudaimonia moves through a signed transaction, never
           through a page load. You can safely retry or step back without
           anything getting lost.
         </p>
@@ -303,8 +304,8 @@ function ErrorContextCard({
   recoveredSessionId?: string;
 }) {
   const statusHref = recoveredSessionId
-    ? `/status/${recoveredSessionId}`
-    : "/status";
+    ? `/processing/${recoveredSessionId}`
+    : "/";
 
   return (
     <section
@@ -588,16 +589,12 @@ function ErrorFooter() {
         <Wordmark size={12} color={colors.inkMute} />
         <div style={{ display: "flex", gap: 18 }}>
           <a
-            href="mailto:hello@philotimo.app"
+            href={ISSUES_URL}
+            rel="noopener noreferrer"
+            target="_blank"
             style={{ color: colors.primary, textDecoration: "none" }}
           >
-            Email support
-          </a>
-          <a
-            href="https://status.philotimo.app"
-            style={{ color: colors.inkMute, textDecoration: "none" }}
-          >
-            Status page
+            Report a problem
           </a>
         </div>
       </div>

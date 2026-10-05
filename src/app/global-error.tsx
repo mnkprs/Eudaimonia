@@ -73,7 +73,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               fontWeight: 400,
             }}
           >
-            Philotimo
+            Eudaimonia
           </div>
 
           <h1
@@ -87,7 +87,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               color: "#0d253d",
             }}
           >
-            Philotimo couldn&rsquo;t load.
+            Eudaimonia couldn&rsquo;t load.
           </h1>
 
           <p
@@ -155,7 +155,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               textAlign: "center",
             }}
           >
-            philotimo.app &middot; transparent giving on Base
+            Eudaimonia &middot; transparent giving on Base
           </div>
         </div>
       </body>

@@ -18,7 +18,7 @@ interface CharityCardProps {
   baseScanUrl?: string;
 }
 
-export function CharityCard({ data, monogram, href = "#", baseScanUrl }: CharityCardProps) {
+export function CharityCard({ data, monogram, href, baseScanUrl }: CharityCardProps) {
   const initials = monogram ?? deriveMonogram(data.charity);
   const isTestnet = isTestnetNetwork(data.network);
 
@@ -103,6 +103,7 @@ export function CharityCard({ data, monogram, href = "#", baseScanUrl }: Charity
           </div>
         </div>
 
+        {href && (
         <a
           href={href}
           rel="noopener noreferrer"
@@ -121,6 +122,7 @@ export function CharityCard({ data, monogram, href = "#", baseScanUrl }: Charity
         >
           Visit charity →
         </a>
+        )}
       </div>
     </section>
   );

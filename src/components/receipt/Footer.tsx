@@ -1,5 +1,6 @@
 import { Wordmark } from "@/components/brand/Wordmark";
 import { isTestnetNetwork } from "@/lib/chain";
+import { SOURCE_REPO_URL } from "@/lib/links";
 import { colors } from "@/lib/tokens";
 import type { Network } from "@/types/receipt";
 
@@ -35,7 +36,7 @@ export function Footer({ network = "Base" }: FooterProps) {
             What is Eudaimonia? →
           </FooterLink>
           <FooterLink href="/fee-policy">How fees work</FooterLink>
-          <FooterLink href="#">Contact</FooterLink>
+          <FooterLink href={SOURCE_REPO_URL}>Source code</FooterLink>
         </div>
       </div>
       <p

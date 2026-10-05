@@ -18,6 +18,8 @@ export interface Campaign {
    * there, not on the campaign.
    */
   ein: string;
+  /** The charity's own website, linked from the receipt's "Visit charity". */
+  website: string;
   /** Short status pill, e.g. "Urgent · Gaza". */
   tag: string;
   /** 1–2 sentence mission statement shown on the campaign card. */
