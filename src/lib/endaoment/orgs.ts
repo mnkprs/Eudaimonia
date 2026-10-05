@@ -18,37 +18,37 @@ export type OrgAddressMap = Readonly<
 /**
  * Production address map.
  *
- * Base Sepolia entries are the CREATE2-predicted Org Entity addresses
- * returned by Endaoment's dev/sandbox registry
- * (`https://api.dev.endaoment.org/v2/orgs/search`, `deployments[chainId=84532]`)
- * - sourced by running `node scripts/fetch-endaoment-orgs.mjs`.
+ * **Base Sepolia entries are TESTNET STAND-INS, not Endaoment entities**
+ * (Epic 8, ADR 0003). Endaoment's Base Sepolia deployment uses a non-mintable
+ * mock base token, and the org addresses its dev registry returns for these
+ * EINs are counterfactual (`isDeployed: false`, no code) — the router's
+ * `IEndaomentEntity(org).donate()` would revert against them. The demo
+ * therefore routes to `EndaomentOrgStandIn` contracts deployed by
+ * `contracts/script/DeployTestnetDemo.s.sol`; the source of truth is
+ * `contracts/deployments/base-sepolia.json`. For the record, Endaoment's
+ * counterfactual Base Sepolia addresses were PCRF
+ * 0xdfbab36381668f800a7b2d5aba796e7f5dac379a, WCK
+ * 0x717242399bedd15ee647914f19b97f6a68deabdd and Direct Relief
+ * 0xa179ef299b61d51807b6e826ee9e0ce94deb8c13.
  *
- * These addresses are canonical even though the underlying contracts report
- * `isDeployed: false`: Endaoment lazy-deploys an Entity on first interaction,
- * and the CREATE2 address is deterministic from the EIN. Routing test USDC
- * to them is safe - the destination is locked in by Endaoment's factory
- * regardless of deployment status.
- *
- * Base mainnet addresses are intentionally absent: the dev registry does not
- * publish mainnet entities for these EINs, and we do NOT ship fabricated or
+ * Base mainnet addresses are intentionally absent: we do NOT ship fabricated or
  * zero-address placeholders - a missing entry resolves to `undefined` in
  * `getOrgAddress`, which the receipt route renders as an explicit unverified
- * state. Production mainnet entries land here once sourced from
- * `https://api.endaoment.org` and recorded in `snapshot.json`'s
- * `mainnetAddress` field.
+ * state. The verified mainnet entities are listed in `prompts/HUMAN-ACTIONS.md`
+ * for a future real-money launch (out of scope for the portfolio demo).
  */
 export const ENDAOMENT_ORG_ADDRESSES: OrgAddressMap = {
   // Palestine Children's Relief Fund
   "93-1057665": {
-    [baseSepolia.id]: "0xdfbab36381668f800a7b2d5aba796e7f5dac379a",
+    [baseSepolia.id]: "0xa27cBA0B1B617dAED0De4686eD029f7B5ECd4720",
   },
   // World Central Kitchen
   "27-3521132": {
-    [baseSepolia.id]: "0x717242399bedd15ee647914f19b97f6a68deabdd",
+    [baseSepolia.id]: "0x43812bc126067fd9446901418721Bc9bbB239674",
   },
   // Direct Relief
   "95-1831116": {
-    [baseSepolia.id]: "0xa179ef299b61d51807b6e826ee9e0ce94deb8c13",
+    [baseSepolia.id]: "0xa591AFCc7F33aCdC62d323064Bf7Dd9f6bADB305",
   },
 };
 
