@@ -1,3 +1,4 @@
+import type { Address, Hex } from "viem";
 import { z } from "zod";
 
 /**
@@ -37,7 +38,8 @@ export const demoEnvSchema = z
       .regex(
         PRIVATE_KEY,
         "DEMO_WALLET_PRIVATE_KEY must be 0x followed by 64 hex characters",
-      ),
+      )
+      .transform((value) => value as Hex),
     DEMO_DAILY_CAP: z.coerce
       .number({ error: "DEMO_DAILY_CAP must be a number" })
       .int("DEMO_DAILY_CAP must be an integer")
@@ -54,7 +56,8 @@ export const demoEnvSchema = z
         EVM_ADDRESS,
         "USDC_CONTRACT_BASE_SEPOLIA must match 0x[a-fA-F0-9]{40}",
       )
-      .default(DEFAULT_USDC_BASE_SEPOLIA),
+      .default(DEFAULT_USDC_BASE_SEPOLIA)
+      .transform((value) => value as Address),
     BASE_SEPOLIA_RPC_URL: z.string().url().optional(),
     NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: z.string().url().optional(),
   })

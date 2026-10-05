@@ -88,6 +88,7 @@ export function CheckoutForm({
   const isSubmittable = selectIsSubmittable(state, policy);
   const breakdown = calculateBreakdown(state.amountCents, {
     includeCardProcessing: policy.showCardProcessingFee,
+    testnetDemo: policy.mode === "demo",
   });
   const summaryState = state.status === "submitting" ? "submitting" : "ready";
 

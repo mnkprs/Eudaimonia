@@ -39,7 +39,7 @@ const ERROR_SPECS: Readonly<Record<DemoErrorCode, ErrorSpec>> = {
   },
   demo_wallet_empty: {
     status: 503,
-    message: "The demo wallet is out of test funds. Please try again later.",
+    message: "The demo wallet is out of test funds. Please try again later, or open a sample receipt from the home page.",
   },
   demo_misconfigured: {
     status: 503,

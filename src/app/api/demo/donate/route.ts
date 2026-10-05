@@ -17,6 +17,7 @@
 
 import { z } from "zod";
 import type { Address } from "viem";
+import { baseSepolia } from "viem/chains";
 import { getCampaignById } from "@/lib/campaigns";
 import { getRouterAddress } from "@/lib/contracts";
 import {
@@ -26,7 +27,7 @@ import {
 import { centsToUsdcUnits, isDemoAmountCents } from "@/lib/demo/constants";
 import { demoEnv, type DemoEnv } from "@/lib/demo/env";
 import { demoError } from "@/lib/demo/errors";
-import { sendUnderLock } from "@/lib/demo/send-under-lock";
+import { DEMO_LOG_SCOPE, sendUnderLock } from "@/lib/demo/send-under-lock";
 import { withSendLock } from "@/lib/demo/send-lock";
 import { getOrgAddress } from "@/lib/endaoment/orgs";
 import type { KvStore } from "@/lib/kv/kv-store";
@@ -44,8 +45,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-const BASE_SEPOLIA_CHAIN_ID = 84532;
-const SCOPE = "demo/donate";
+const SCOPE = DEMO_LOG_SCOPE;
 
 const IP_LIMIT = 3;
 const IP_WINDOW_SECONDS = 600;
@@ -58,7 +58,7 @@ const SEND_LOCK_POLL_MS = 250;
 const bodySchema = z.object({
   campaignId: z.string().trim().min(1).max(64),
   grossCents: z.number().int().refine(isDemoAmountCents, {
-    message: "Demo donations must be between $1.00 and $5.00",
+    message: "Demo donations must be $1, $2 or $5",
   }),
 });
 
@@ -211,14 +211,14 @@ export function POST(request: Request): Promise<Response> {
   return handleDemoDonate(request, {
     loadEnv: demoEnv,
     getCampaign: getCampaignById,
-    getOrgAddress: (ein) => getOrgAddress(ein, BASE_SEPOLIA_CHAIN_ID),
-    getRouterAddress: () => getRouterAddress(BASE_SEPOLIA_CHAIN_ID),
+    getOrgAddress: (ein) => getOrgAddress(ein, baseSepolia.id),
+    getRouterAddress: () => getRouterAddress(baseSepolia.id),
     createGateway: ({ env, routerAddress }) =>
       createDemoChainGateway({
-        privateKey: env.DEMO_WALLET_PRIVATE_KEY as `0x${string}`,
+        privateKey: env.DEMO_WALLET_PRIVATE_KEY,
         rpcUrl: env.rpcUrl,
         routerAddress,
-        usdcAddress: env.USDC_CONTRACT_BASE_SEPOLIA as Address,
+        usdcAddress: env.USDC_CONTRACT_BASE_SEPOLIA,
       }),
     store,
     ipLimiter: createRateLimiter(store, {

@@ -46,6 +46,8 @@ const EMPTY_BREAKDOWN: FeeBreakdown = {
 export interface CalculateBreakdownOptions {
   /** Show the card processing row (on-ramp). Defaults to true. */
   readonly includeCardProcessing?: boolean;
+  /** Base Sepolia demo: label Endaoment and the net as testnet stand-ins. Defaults to false. */
+  readonly testnetDemo?: boolean;
 }
 
 /**
@@ -66,6 +68,7 @@ export function calculateBreakdown(
   options: CalculateBreakdownOptions = {},
 ): FeeBreakdown {
   const includeCardProcessing = options.includeCardProcessing ?? true;
+  const testnetDemo = options.testnetDemo ?? false;
   if (!Number.isFinite(grossCents) || grossCents <= 0) {
     return EMPTY_BREAKDOWN;
   }
@@ -95,8 +98,10 @@ export function calculateBreakdown(
     },
     {
       kind: "endaoment",
-      label: "Endaoment fee",
-      sub: "1.50% · charitable infrastructure",
+      label: testnetDemo ? "Endaoment fee (stand-in)" : "Endaoment fee",
+      sub: testnetDemo
+        ? "1.50% · simulated by a testnet contract"
+        : "1.50% · charitable infrastructure",
       amountCents: endaomentFeeCents,
       muted: true,
     },
@@ -114,7 +119,9 @@ export function calculateBreakdown(
     {
       kind: "net",
       label: "Net to charity",
-      sub: "USDC · Base · Endaoment Org Fund",
+      sub: testnetDemo
+        ? "Test USDC · Base Sepolia · stand-in contract"
+        : "USDC · Base · Endaoment Org Fund",
       amountCents: netToCharityCents,
       strong: true,
     },

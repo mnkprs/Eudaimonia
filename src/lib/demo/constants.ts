@@ -25,13 +25,9 @@ export const DEMO_MIN_AMOUNT_CENTS = 1 * CENTS_PER_DOLLAR;
 /** Largest demo donation: $5.00. */
 export const DEMO_MAX_AMOUNT_CENTS = 5 * CENTS_PER_DOLLAR;
 
-/** True when `cents` is an integer inside the demo bounds. */
+/** True only for one of the demo presets ($1, $2 or $5) — the server's allowlist. */
 export function isDemoAmountCents(cents: number): boolean {
-  return (
-    Number.isInteger(cents) &&
-    cents >= DEMO_MIN_AMOUNT_CENTS &&
-    cents <= DEMO_MAX_AMOUNT_CENTS
-  );
+  return DEMO_PRESETS_CENTS.includes(cents);
 }
 
 /** Integer cents → 6-decimal USDC base units (USDC is pegged 1:1 to USD here). */

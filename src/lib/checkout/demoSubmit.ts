@@ -17,7 +17,7 @@ const SERVER_ERROR_MESSAGES = {
   demo_disabled: "The testnet demo is switched off right now.",
   demo_busy: "The demo is handling another donation — try again in a moment.",
   demo_wallet_empty:
-    "The demo wallet is out of test funds right now — try again later.",
+    "The demo wallet is out of test funds right now — try again later, or open a sample receipt from the home page.",
   demo_misconfigured: "The testnet demo isn’t configured correctly right now.",
   chain_error:
     "The test transaction couldn’t be completed on Base Sepolia — try again.",
