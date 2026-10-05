@@ -150,6 +150,9 @@
 | E8.1 | Shared KV for demo limits (Upstash via Vercel Marketplace) | OPTIONAL | Without it, the demo's send lock, per-IP limit and daily cap are per serverless instance (the nonce retry covers the gap). Add if demo traffic ever causes nonce collisions. |
 | E8.2 | Run `DeployedRouterFork.t.sol` against the Sepolia demo in CI | OPTIONAL | Needs `BASE_RPC_URL`/`ROUTER_ADDRESS`/`ENDAOMENT_ORG` as CI secrets and a pinned `FORK_BLOCK`. |
 | E8.3 | Show `LiveReceiptStrip` on Base Sepolia and link its rows to receipts | OPTIONAL | Currently mainnet-only (#37); its 2,000-block lookback (~1 h) would usually be empty with demo traffic. |
+| E8.4 | Dead `#` links on the receipt: "Visit charity" (`CharityCard` default `href`) and footer "Contact" | OPEN (polish) | Point "Visit charity" at the charity's site from metadata, and give Contact a real target or drop it. |
+| E8.5 | Production-design copy on the demo: "Card or Apple Pay" in `HowItWorks` and the 404 screen | OPEN (polish) | Accurate for the production design; consider a demo-mode variant like the hero trust row. |
+| E8.6 | `sepolia.base.org` serves stale reads (nonce, balances) behind its load balancer | NOTED | The demo route uses `BASE_SEPOLIA_RPC_URL` (publicnode) server-side; the nonce retry covers the rest. An authenticated RPC would remove the issue. |
 
 ## Epic 7 — Production Readiness ([#8](https://github.com/mnkprs/Philotimo/issues/8) · [plan](prompts/epic-7-production-readiness-plan.md))
 

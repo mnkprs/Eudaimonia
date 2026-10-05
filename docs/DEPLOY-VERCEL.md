@@ -11,6 +11,30 @@
 
 ---
 
+## 0. Live demo profile (Epic 8 — what is deployed today)
+
+The public site **https://eudaimonia-nine.vercel.app** is the Base Sepolia testnet demo ([ADR 0003](adr/0003-testnet-demo.md)), not the real-money launch described in §1–2.
+
+- **Project:** `eudaimonia` in team `backfrom13-4829s-projects`, Git-connected to `mnkprs/Eudaimonia`. Install `npm ci` (the repo also carries a pnpm lockfile — keep the override), **Node 24.x** (Node 20 reached end of support on Vercel on 2026-10-01; the 20.x row below is superseded).
+- **Production branch is `main`.** Merging to `main` deploys production.
+- **Env (Production + Preview):**
+
+| Var | Value | Notes |
+|---|---|---|
+| `NEXT_PUBLIC_CHAIN` | `base-sepolia` | Mainnet (`base`) can never run the demo |
+| `NEXT_PUBLIC_DONATION_MODE` | `demo` | `onramp` restores the Stripe checkout |
+| `NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL` / `NEXT_PUBLIC_BASE_RPC_URL` | `https://sepolia.base.org` / `https://mainnet.base.org` | Client reads; also feed the CSP `connect-src` |
+| `NEXT_PUBLIC_ROUTER_ADDRESS_BASE_SEPOLIA` | `0x88964c6141D927dB05ddFA995a6ffA4BbD1beB91` | Baked in at build — redeploy after changing |
+| `BASE_SEPOLIA_RPC_URL` | `https://base-sepolia-rpc.publicnode.com` | Server-only RPC for the demo wallet (fewer stale reads than `sepolia.base.org`) |
+| `USDC_CONTRACT_BASE_SEPOLIA` | `0x036CbD53842c5426634e7929541eC2318f3dCF7e` | Circle test USDC |
+| `DEMO_DONATIONS_ENABLED` | `true` | Kill switch — anything else returns `demo_disabled` |
+| `DEMO_DAILY_CAP` | `25` | Global donations per day |
+| `DEMO_WALLET_PRIVATE_KEY` | *(Sensitive)* | Testnet-only demo wallet; never `NEXT_PUBLIC_` |
+
+No Stripe, KV or Sentry variables are needed for the demo; KV falls back to in-memory (limits are then per instance). Day-to-day demo operations (refill, recycle test USDC, rotate the key) are in [`prompts/HUMAN-ACTIONS.md`](../prompts/HUMAN-ACTIONS.md#demo-ops-base-sepolia-public-demo).
+
+---
+
 ## 1. Vercel deploy steps
 
 This is a standard Next.js App Router app (`next@16.2.6`, `react@19.2.4`). Vercel
