@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BaseMark } from "@/components/brand/BaseMark";
 import { CharityAvatar } from "@/components/brand/CharityAvatar";
 import { GradientMesh } from "@/components/brand/GradientMesh";
@@ -12,6 +14,7 @@ import {
   type LiveStage,
 } from "@/lib/onramp/live-stages";
 import type { ProcessingView } from "@/lib/onramp/processing-view";
+import { ISSUES_URL } from "@/lib/links";
 import { colors } from "@/lib/tokens";
 
 /**
@@ -460,11 +463,16 @@ function Footer({ sessionId }: { sessionId: string }) {
       >
         <Wordmark size={12} color={colors.inkMute} />
         <div style={{ display: "flex", gap: 18, fontSize: 12 }}>
-          <a href="#" style={{ color: colors.primary, textDecoration: "none" }}>
+          <Link href="/#how-it-works" style={{ color: colors.primary, textDecoration: "none" }}>
             What is Eudaimonia?
-          </a>
-          <a href="#" style={{ color: colors.inkMute, textDecoration: "none" }}>
-            Contact
+          </Link>
+          <a
+            href={ISSUES_URL}
+            rel="noopener noreferrer"
+            target="_blank"
+            style={{ color: colors.inkMute, textDecoration: "none" }}
+          >
+            Report a problem
           </a>
         </div>
       </div>

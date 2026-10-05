@@ -46,10 +46,10 @@ describe("NotFoundScreen", () => {
       "%s — primary exit links to the landing page",
       (variant) => {
         const html = renderToString(<NotFoundScreen variant={variant} />);
-        // Primary "Choose a charity" CTA must be wrapped in an <a href="/">.
+        // Primary "Choose a charity" CTA lands on the causes section.
         // The anchor wraps multiple nested elements, so match across them.
         expect(html).toMatch(
-          /href="\/"[\s\S]*?Choose a charity[\s\S]*?<\/a>/,
+          /href="\/#causes"[\s\S]*?Choose a charity[\s\S]*?<\/a>/,
         );
       },
     );
@@ -63,14 +63,13 @@ describe("NotFoundScreen", () => {
     );
 
     test.each(allVariants)(
-      "%s — broken-link card has a mailto CTA",
+      "%s — broken-link card links to GitHub issues",
       (variant) => {
         const html = renderToString(<NotFoundScreen variant={variant} />);
         expect(html).toContain("Report a broken link");
-        // Anchor the assertion inside the broken-link card so the test can't
-        // pass spuriously on the mailto used by the "Recover a receipt" exit.
+        // Anchor the assertion inside the broken-link card.
         expect(html).toMatch(
-          /Report a broken link[\s\S]+mailto:hello@philotimo\.app\?subject=Broken%20link/,
+          /Report a broken link[\s\S]+https:\/\/github\.com\/mnkprs\/Eudaimonia\/issues/,
         );
       },
     );

@@ -7,6 +7,7 @@ import { VerificationCard } from "@/components/receipt/VerificationCard";
 import { isAddress } from "viem";
 import { baseSepolia } from "wagmi/chains";
 
+import { getCampaignByEin } from "@/lib/campaigns";
 import { deriveBaseScanUrl } from "@/lib/endaoment/registry";
 import { deriveTxUrl } from "@/lib/explorer";
 import { colors } from "@/lib/tokens";
@@ -54,7 +55,11 @@ export function EudaimoniaReceipt({
         txid={txid}
         chainId={chainId}
       />
-      <CharityCard data={bundle.data} baseScanUrl={orgUrl} />
+      <CharityCard
+        data={bundle.data}
+        baseScanUrl={orgUrl}
+        href={getCampaignByEin(bundle.data.ein)?.website}
+      />
       <VerificationCard
         data={bundle.data}
         showFeeStrip={showFeeStrip}

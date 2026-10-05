@@ -162,7 +162,7 @@ describe("ErrorScreen", () => {
           recoveredSessionId="cs_live_test_abc"
         />,
       );
-      expect(html).toContain("/status/cs_live_test_abc");
+      expect(html).toContain("/processing/cs_live_test_abc");
     });
 
     test("processing variant falls back to a generic resume link when no sessionId", () => {
@@ -171,7 +171,7 @@ describe("ErrorScreen", () => {
       );
       // No specific session id: link must still render but point at /status
       // (or the generic resume entry point) — never crash.
-      expect(html).toContain("/status");
+      expect(html).not.toContain("/status");
     });
   });
 

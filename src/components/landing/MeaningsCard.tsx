@@ -50,15 +50,6 @@ const FACES: readonly Face[] = [
 
 const CYCLE_MS = 2600;
 
-function SoundDot() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
-      <circle cx="4.5" cy="4.5" r="4" fill={colors.primary} />
-      <path d="M3.5 3v3l2.5-1.5z" fill="#fff" />
-    </svg>
-  );
-}
-
 export function MeaningsCard() {
   const [index, setIndex] = useState(0);
 
@@ -139,14 +130,6 @@ export function MeaningsCard() {
         <Mono size={12} color={colors.inkMute}>
           {IPA}
         </Mono>
-        <button
-          type="button"
-          aria-disabled="true"
-          className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-transparent px-2.5 py-[5px] text-[11px] text-ink aria-disabled:opacity-60"
-          style={{ letterSpacing: "-0.1px" }}
-        >
-          <SoundDot /> hear it
-        </button>
       </div>
     </div>
   );

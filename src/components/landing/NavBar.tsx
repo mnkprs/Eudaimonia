@@ -16,10 +16,9 @@ interface NavBarProps {
 
 function navLinks(receiptsHref: string | null): readonly NavLink[] {
   return [
-    { label: "Causes", href: "#causes" },
-    { label: "How it works", href: "#how-it-works" },
+    { label: "Causes", href: "/#causes" },
+    { label: "How it works", href: "/#how-it-works" },
     ...(receiptsHref ? [{ label: "Receipts", href: receiptsHref }] : []),
-    { label: "For nonprofits", href: "#for-nonprofits" },
   ];
 }
 
@@ -52,14 +51,8 @@ export function NavBar({ receiptsHref = null }: NavBarProps = {}) {
       </div>
 
       <div className="flex items-center gap-3">
-        <Link
-          href="/sign-in"
-          className="hidden min-h-11 items-center text-sm tracking-[-0.1px] text-ink no-underline hover:text-iris sm:inline-flex"
-        >
-          Sign in
-        </Link>
         <PillButton
-          href="/donate"
+          href="/#causes"
           variant="primary"
           icon={<ArrowRight color="#fff" />}
         >

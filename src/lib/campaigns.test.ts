@@ -107,7 +107,7 @@ describe("campaignHref", () => {
 });
 
 describe("campaign websites (receipt 'Visit charity')", () => {
-  test("every campaign has an https website", async () => {
+  it("every campaign has an https website", async () => {
     const { CAMPAIGNS, getCampaignByEin } = await import("@/lib/campaigns");
     for (const campaign of CAMPAIGNS) {
       expect(campaign.website).toMatch(/^https:\/\/[a-z0-9.-]+\.[a-z]{2,}\/?$/);

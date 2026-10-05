@@ -138,7 +138,7 @@ export function HowItWorks() {
             </span>
           </div>
           <a
-            href="#fees"
+            href="/fee-policy"
             className="inline-flex items-center gap-1 text-[13px] text-iris hover:underline"
             style={{ letterSpacing: "-0.1px" }}
           >

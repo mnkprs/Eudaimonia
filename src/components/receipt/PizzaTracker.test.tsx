@@ -161,12 +161,11 @@ describe("PizzaTracker — per-stage Verify ↗ hrefs", () => {
   const TX =
     "0xabc123def456abc123def456abc123def456abc123def456abc123def456abc123" as const;
 
-  test("without txid/chainId props all Verify links fall back to href='#'", () => {
+  test("without txid/chainId props Verify labels render inert (never a dead # link)", () => {
     const html = renderToString(<PizzaTracker stages={fixtureStages} />);
-    // Every VerifyLink should default to href="#" when no tx context is given.
-    // Active stages = 4; each must use href="#".
-    const hrefHash = (html.match(/href="#"/g) ?? []).length;
-    expect(hrefHash).toBeGreaterThanOrEqual(4);
+    // No tx context → nothing to verify yet: labels stay visible but inert.
+    expect(html).not.toContain('href="#"');
+    expect((html.match(/aria-disabled="true"/g) ?? []).length).toBeGreaterThanOrEqual(4);
   });
 
   test("with txid + base.id each active-stage Verify link points to basescan.org tx #eventlog", () => {

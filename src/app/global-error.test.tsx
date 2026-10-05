@@ -46,7 +46,7 @@ describe("global-error", () => {
       const html = renderToString(
         <GlobalError error={fakeError} reset={noop} />,
       );
-      expect(html).toContain("Philotimo couldn");
+      expect(html).toContain("Eudaimonia couldn");
       expect(html).toContain("load");
       // Reassurance that funds didn't move with a page render.
       expect(html).toContain("signed transaction");

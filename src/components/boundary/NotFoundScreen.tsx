@@ -5,6 +5,7 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { ArrowRight } from "@/components/ui/ArrowRight";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { PillButton } from "@/components/ui/PillButton";
+import { ISSUES_URL } from "@/lib/links";
 import { colors } from "@/lib/tokens";
 
 /**
@@ -41,12 +42,12 @@ const VARIANTS: Record<NotFoundVariant, VariantContent> = {
   expired_session: {
     eyebrow: "404 · Processing session expired",
     subhead:
-      "Processing sessions clear from our cache after a few hours. If your donation actually completed, the receipt was published to Base and is permanently findable by transaction hash. Use “find a receipt” below.",
+      "Processing sessions clear from our cache after a few hours. If your donation actually completed, the receipt was published to Base and is permanently findable by transaction hash.",
   },
   unknown_receipt: {
     eyebrow: "404 · Receipt not found",
     subhead:
-      "We couldn’t find a donation at that transaction hash on Base. Either the URL has a typo, or the hash belongs to a different contract — only transfers through TransparentDonationRouter resolve to a Philotimo receipt.",
+      "We couldn’t find a donation at that transaction hash on Base. Either the URL has a typo, or the hash belongs to a different contract — only transfers through TransparentDonationRouter resolve to a Eudaimonia receipt.",
   },
 };
 
@@ -63,24 +64,15 @@ const EXIT_CARDS: readonly ExitCard[] = [
   {
     eyebrow: "Most people want",
     title: "Start a new donation",
-    body: "Browse the curated set of verified 501(c)(3) campaigns. Card or Apple Pay; the on-chain side runs itself.",
+    body: "Browse the curated set of verified 501(c)(3) campaigns; the on-chain side runs itself.",
     cta: "Choose a charity",
     variant: "primary",
-    href: "/",
-  },
-  {
-    eyebrow: "I had one in flight",
-    title: "Find an existing receipt",
-    body: "Look up a published receipt by transaction hash or by the email we sent it to. Receipts on Base live forever — nothing of yours has been deleted.",
-    cta: "Recover a receipt",
-    variant: "ghost",
-    // Recovery flow is a later epic. Mailto placeholder until then.
-    href: "mailto:hello@philotimo.app?subject=Recover%20a%20receipt",
+    href: "/#causes",
   },
   {
     eyebrow: "I’m just curious",
-    title: "How Philotimo works",
-    body: "The 5-stage route from your card to a verified charity’s fund — every hop public, every fee on-chain, no custody in the middle.",
+    title: "How Eudaimonia works",
+    body: "The 5-stage route from your donation to the charity — every hop public, every fee on-chain, no custody in the middle.",
     cta: "Read how it works",
     variant: "ghost",
     href: "/#how-it-works",
@@ -369,16 +361,12 @@ function NotFoundBrokenLinkCard() {
             }}
           >
             Tell us where you came from &mdash; it&rsquo;s the quickest way for
-            us to fix campaign URLs that got published with a typo. No form,
-            just a one-line email.
+            us to fix campaign URLs that got published with a typo. A one-line
+            GitHub issue is enough.
           </p>
         </div>
-        <PillButton
-          href="mailto:hello@philotimo.app?subject=Broken%20link"
-          variant="dark"
-          size="md"
-        >
-          hello@philotimo.app
+        <PillButton href={ISSUES_URL} variant="dark" size="md">
+          Open a GitHub issue
         </PillButton>
       </div>
     </section>
@@ -412,13 +400,15 @@ function NotFoundFooter() {
             href="/#how-it-works"
             style={{ color: colors.primary, textDecoration: "none" }}
           >
-            What is Philotimo?
+            What is Eudaimonia?
           </Link>
           <a
-            href="mailto:hello@philotimo.app"
+            href={ISSUES_URL}
+            rel="noopener noreferrer"
+            target="_blank"
             style={{ color: colors.inkMute, textDecoration: "none" }}
           >
-            Contact
+            Report a problem
           </a>
         </div>
       </div>
