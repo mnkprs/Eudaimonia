@@ -1,0 +1,53 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "purpose": "Epic 8 public testnet demo (ADR 0003). Stand-in contracts are TESTNET ONLY and not affiliated with Endaoment.",
+  "deployedAt": "2026-10-06",
+  "deployBlocks": { "from": 47734359, "to": 47734366 },
+  "script": "script/DeployTestnetDemo.s.sol:DeployTestnetDemo",
+  "explorer": "https://base-sepolia.blockscout.com",
+  "sourceVerified": "Blockscout (all five contracts)",
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "roles": {
+    "owner": "0x67Ff1580b257be4dd8C078D8a4330be4464543B8",
+    "platformTreasury": "0xEFDc4E245a88e68226319E90ccA490E4c3A4adad",
+    "standInFeeRecipient": "0x67Ff1580b257be4dd8C078D8a4330be4464543B8",
+    "demoWallet": "0x40436fc2573527F7B25cAB98e9d2D560a77d7A76"
+  },
+  "contracts": {
+    "TransparentDonationRouter": {
+      "address": "0x88964c6141D927dB05ddFA995a6ffA4BbD1beB91",
+      "deployTx": "0x6c0ba9d2131ecb2bea96f508fcff6ab43e86a281bece11211e448cc274119c45"
+    },
+    "EndaomentRegistryStandIn": {
+      "address": "0xc14e0D932102aF3c8E8580921f1C223422a2e078",
+      "deployTx": "0xe120c21704ee3c0903343d7f18540043469c8cbb9dcd41055f3e420e5b475cea"
+    },
+    "EndaomentOrgStandIn:pcrf": {
+      "address": "0xa27cBA0B1B617dAED0De4686eD029f7B5ECd4720",
+      "deployTx": "0xc2e5d58a41c760d365491d8590637da28cc0c7a452b0097cd1e6fe4c468deae9",
+      "allowlistTx": "0x20bc40238b1a60e89ee90aac91c1e52850ecfcd243e49593f3655121a9e5c30c"
+    },
+    "EndaomentOrgStandIn:wck": {
+      "address": "0x43812bc126067fd9446901418721Bc9bbB239674",
+      "deployTx": "0xfdb80cbe360b6fed374a1f96e52d4659f1839bf222feec0c427529102ec36dba",
+      "allowlistTx": "0xbf31876486ecfd2d6cbaa8484d5b90d46f2f8e582f8858b60d20f123836d774a"
+    },
+    "EndaomentOrgStandIn:directrelief": {
+      "address": "0xa591AFCc7F33aCdC62d323064Bf7Dd9f6bADB305",
+      "deployTx": "0x464d8f9c5419d1ef5a7b1598b4df2bd92e7c1fac29f6f01b4e6be2706779ba84",
+      "allowlistTx": "0x65ee2a80383f24d18e50670d86ad2fe9de6121fcb53c125550d07c0aee0b9a12"
+    }
+  },
+  "demoWalletSetup": {
+    "usdcFundingTx": "0x32f3617ccdb91cbe7de4ad391d40f4c85998eb2ca69481f6416c093a0bead785",
+    "ethFundingTx": "0xa3040258ca4083c89849868f1629a283a85f1eead0e61e3eed94c7fd2d10a0a2",
+    "approveRouterTx": "0x5e2f82bbe92fe2ff9babab79639515d4b01f82b84e032f4aa2a24fae7833dea4"
+  },
+  "smokeDonations": {
+    "note": "$1 test USDC each from the demo wallet; verified split: treasury +10000, stand-in fee +14850, org +975150, router 0. DeployedRouterFork.t.sol green for all three orgs at block 47734538.",
+    "pcrf": "0x31335acb9328ae3136adb552943a07844c806165aaa43b547628986433c3cd9e",
+    "wck": "0x4f2f6f693b295da40bb971f26dbe08e83b765de22f1377bf6bccdd54293ed849",
+    "directrelief": "0xc5388d494291b06cb7e51b5c1828aa5212e8199e0d02231ae217d44a548e49e1"
+  }
+}
