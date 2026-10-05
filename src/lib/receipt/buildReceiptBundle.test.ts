@@ -75,6 +75,19 @@ function buildValid() {
 // Top-level shape
 // ---------------------------------------------------------------------------
 
+describe("display amounts (receipt UI contract: plain dollar strings, UI adds $)", () => {
+  it("formats the gross as a 2-decimal dollar string without a currency symbol", () => {
+    expect(buildValid().data.amount).toBe("1.00");
+  });
+
+  it("formats fees without trailing zeros (min 2 decimals) and no symbol", () => {
+    const { data } = buildValid();
+    expect(data.platformFee).toBe("0.01");
+    expect(data.endaomentFee).toBe("0.01485");
+    expect(data.donorFee).toBe("0.00");
+  });
+});
+
 describe("buildReceiptBundle", () => {
   it("returns a ReceiptBundle with data + stages", () => {
     const bundle = buildValid();

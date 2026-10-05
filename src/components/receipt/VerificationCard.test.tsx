@@ -27,6 +27,18 @@ const FIXTURE: ReceiptData = {
   donorFee: "0.00",
 };
 
+describe("VerificationCard fee strip amounts", () => {
+  test("charity received is gross minus both fees, with a single $ sign", () => {
+    const html = renderToString(
+      <VerificationCard
+        data={{ ...FIXTURE, amount: "2.00", platformFee: "0.02", endaomentFee: "0.0297" }}
+      />,
+    );
+    expect(html).toMatch(/Charity received.*\$<!-- -->1\.9503|Charity received.*\$1\.9503/s);
+    expect(html).not.toContain("$$");
+  });
+});
+
 describe("VerificationCard", () => {
   test("renders the transaction hash", () => {
     const html = renderToString(<VerificationCard data={FIXTURE} />);

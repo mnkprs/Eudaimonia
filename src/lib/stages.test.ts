@@ -164,6 +164,11 @@ describe("buildStages testnet-demo variant", () => {
     expect(demo[4].detail).toContain("testnet stand-in");
   });
 
+  it("labels the skipped conversion stage 'Not needed' in the demo and 'Off-chain' by default", () => {
+    expect(demo[1].inactiveLabel).toBe("Not needed");
+    expect(buildStages(demoInput)[1].inactiveLabel).toBe("Off-chain");
+  });
+
   it("leaves default output unchanged when variant is omitted or 'default'", () => {
     expect(buildStages({ ...demoInput, variant: "default" })).toEqual(
       buildStages(demoInput),

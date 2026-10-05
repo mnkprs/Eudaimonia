@@ -106,10 +106,26 @@ describe("PizzaTracker", () => {
     expect(html).toContain("USDC");
   });
 
-  test("renders the inactive copy and FUTURE chip for inactive stages", () => {
+  test("renders the inactive stage's own detail and the default FUTURE chip", () => {
     const html = renderToString(<PizzaTracker stages={fixtureStages} />);
     expect(html).toContain("Future");
-    expect(html).toContain("no Eudaimonia fee was charged");
+    expect(html).toContain("Future platform fee.");
+  });
+
+  test("an inactive conversion stage shows its own label and detail, never the fee copy", () => {
+    const converted: Stage = {
+      ...fixtureStages[3],
+      n: 2,
+      title: "Converted",
+      detail: "Converted off-chain by the onramp.",
+      inactive: true,
+      inactiveLabel: "Off-chain",
+    };
+    const html = renderToString(<PizzaTracker stages={[converted]} />);
+    expect(html).toContain("Off-chain");
+    expect(html).toContain("Converted off-chain by the onramp.");
+    expect(html).not.toContain("no Eudaimonia fee was charged");
+    expect(html).not.toContain(">Future<");
   });
 
   test("omits the value block for inactive stages (no amount line shown)", () => {
