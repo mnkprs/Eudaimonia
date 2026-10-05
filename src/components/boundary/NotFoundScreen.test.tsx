@@ -38,7 +38,7 @@ describe("NotFoundScreen", () => {
     test.each(allVariants)("%s — renders all three exit cards", (variant) => {
       const html = renderToString(<NotFoundScreen variant={variant} />);
       expect(html).toContain("Choose a charity");
-      expect(html).toContain("Recover a receipt");
+      expect(html).not.toContain("Recover a receipt");
       expect(html).toContain("Read how it works");
     });
 
@@ -136,5 +136,15 @@ describe("NotFoundScreen", () => {
       const html = renderToString(<NotFoundScreen />);
       expect(html).toContain("This page doesn");
     });
+  });
+});
+
+describe("NotFoundScreen links (MVP)", () => {
+  test("no dead domain; broken links are reported on GitHub; brand is Eudaimonia", () => {
+    const html = renderToString(<NotFoundScreen />);
+    expect(html).not.toContain("philotimo.app");
+    expect(html).not.toContain("Philotimo");
+    expect(html).toContain("https://github.com/mnkprs/Eudaimonia/issues");
+    expect(html).toContain('href="/#causes"');
   });
 });

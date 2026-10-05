@@ -72,13 +72,14 @@ describe("ErrorScreen", () => {
     );
 
     test.each(allVariants)(
-      "%s — footer links: support mailto + status placeholder",
+      "%s — footer links: report on GitHub, no dead domain or status page",
       (variant) => {
         const html = renderToString(
           <ErrorScreen variant={variant} reset={noop} />,
         );
-        expect(html).toContain("mailto:hello@philotimo.app");
-        expect(html).toContain("Email support");
+        expect(html).toContain("https://github.com/mnkprs/Eudaimonia/issues");
+        expect(html).not.toContain("philotimo.app");
+        expect(html).not.toContain("Status page</a>");
       },
     );
   });
@@ -89,7 +90,7 @@ describe("ErrorScreen", () => {
         <ErrorScreen variant="route_render_error" reset={noop} />,
       );
       expect(html).toContain("Something broke");
-      expect(html).toContain("Browsing Philotimo");
+      expect(html).toContain("Browsing Eudaimonia");
       expect(html).toContain("Nothing in flight");
     });
 
@@ -114,7 +115,8 @@ describe("ErrorScreen", () => {
       expect(html).toContain("Watching your donation settle");
       // The resumeable variant shows the iris pill + status URL.
       expect(html).toContain("Pick up where you left off");
-      expect(html).toContain("/status/cs_live_abc");
+      expect(html).toContain("/processing/cs_live_abc");
+      expect(html).not.toContain("/status/cs_live_abc");
     });
 
     test("receipt_render_error — Basescan fallback hint", () => {

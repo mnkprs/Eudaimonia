@@ -70,7 +70,8 @@ describe("global-error", () => {
       const html = renderToString(
         <GlobalError error={fakeError} reset={noop} />,
       );
-      expect(html).toContain("philotimo.app");
+      expect(html).toContain("Eudaimonia");
+      expect(html).not.toContain("philotimo.app");
     });
 
     test("uses system font fallback (does not require Inter to be loaded)", () => {
