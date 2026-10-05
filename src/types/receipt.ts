@@ -100,6 +100,8 @@ export interface Stage {
   fee?: boolean;
   /** Stage exists in the timeline but did not execute for this tx. */
   inactive?: boolean;
+  /** Chip text for an inactive stage (e.g. "Off-chain"); the tracker defaults to "Future". */
+  inactiveLabel?: string;
   /** Final stage — terminates the tracker line. */
   terminal?: boolean;
 }

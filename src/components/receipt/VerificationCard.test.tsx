@@ -27,6 +27,18 @@ const FIXTURE: ReceiptData = {
   donorFee: "0.00",
 };
 
+describe("VerificationCard fee strip amounts", () => {
+  test("charity received is gross minus both fees, with a single $ sign", () => {
+    const html = renderToString(
+      <VerificationCard
+        data={{ ...FIXTURE, amount: "2.00", platformFee: "0.02", endaomentFee: "0.0297" }}
+      />,
+    );
+    expect(html).toMatch(/Charity received.*\$<!-- -->1\.9503|Charity received.*\$1\.9503/s);
+    expect(html).not.toContain("$$");
+  });
+});
+
 describe("VerificationCard", () => {
   test("renders the transaction hash", () => {
     const html = renderToString(<VerificationCard data={FIXTURE} />);
@@ -71,5 +83,31 @@ describe("VerificationCard", () => {
       <VerificationCard data={FIXTURE} showFeeStrip={false} />,
     );
     expect(html).not.toContain("Donor paid");
+  });
+});
+
+describe("VerificationCard on Base Sepolia", () => {
+  const SEPOLIA: ReceiptData = { ...FIXTURE, network: "Base Sepolia" };
+
+  test("fee strip labels the Endaoment fee as a stand-in", () => {
+    const html = renderToString(<VerificationCard data={SEPOLIA} />);
+    expect(html).toContain("Endaoment fee (stand-in)");
+  });
+
+  test("proof badge reads testnet stand-in and links to the org address", () => {
+    const url = "https://sepolia.basescan.org/address/0xabc";
+    const html = renderToString(
+      <VerificationCard data={SEPOLIA} orgBaseScanUrl={url} />,
+    );
+    expect(html).toContain("Testnet stand-in");
+    expect(html).not.toContain("Verified by Endaoment");
+    expect(html).toContain(`href="${url}"`);
+  });
+
+  test("mainnet copy is unchanged", () => {
+    const html = renderToString(<VerificationCard data={FIXTURE} />);
+    expect(html).toContain("Endaoment fee");
+    expect(html).not.toContain("(stand-in)");
+    expect(html).toContain("Verified by Endaoment");
   });
 });

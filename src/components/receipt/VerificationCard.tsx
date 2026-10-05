@@ -1,9 +1,11 @@
 import { EndaomentBadge } from "@/components/brand/EndaomentBadge";
+import { trimDecimals } from "@/lib/receipt/format";
 import { CopyButton } from "@/components/ui/CopyButton";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { Mono } from "@/components/ui/Mono";
 import { Num } from "@/components/ui/Num";
 import { VerifyLink } from "@/components/ui/VerifyLink";
+import { isTestnetNetwork } from "@/lib/chain";
 import { colors } from "@/lib/tokens";
 import type { ReceiptData } from "@/types/receipt";
 
@@ -12,19 +14,32 @@ interface VerificationCardProps {
   /** Render the bottom fee disclosure strip. */
   showFeeStrip?: boolean;
   /**
-   * BaseScan URL for the Endaoment org address, e.g.
-   * "https://basescan.org/address/0x…". Wired from `getCharity().baseScanUrl`
-   * by the receipt route. When omitted the VerifyLink falls back to "#".
+   * BaseScan URL for the transaction, e.g. "https://basescan.org/tx/0x…".
+   * When omitted the "Open on BaseScan" VerifyLink falls back to "#".
    */
   baseScanUrl?: string;
+  /**
+   * BaseScan URL for the org address. When provided the Endaoment badge in the
+   * Proof header becomes an anchor to the on-chain record.
+   */
+  orgBaseScanUrl?: string;
 }
 
-export function VerificationCard({ data, showFeeStrip = true, baseScanUrl }: VerificationCardProps) {
+export function VerificationCard({
+  data,
+  showFeeStrip = true,
+  baseScanUrl,
+  orgBaseScanUrl,
+}: VerificationCardProps) {
   return (
     <section style={{ maxWidth: 1240, margin: "0 auto", padding: "0 64px 56px" }}>
       <div style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 12 }}>
         <EyebrowLabel>Proof</EyebrowLabel>
-        <EndaomentBadge size="sm" />
+        <EndaomentBadge
+          size="sm"
+          href={orgBaseScanUrl}
+          variant={isTestnetNetwork(data.network) ? "testnet-stand-in" : "verified"}
+        />
       </div>
       <div
         style={{
@@ -154,7 +169,10 @@ function FeeStrip({ data }: FeeStripProps) {
       >
         <FeeCell label="Donor paid" value={`$${data.amount}`} />
         <FeeCell label="Network fee" value={`$${data.donorFee} (sponsored)`} />
-        <FeeCell label="Endaoment fee" value={`$${data.endaomentFee} (1.5%)`} />
+        <FeeCell
+          label={isTestnetNetwork(data.network) ? "Endaoment fee (stand-in)" : "Endaoment fee"}
+          value={`$${data.endaomentFee} (1.5%)`}
+        />
         <FeeCell
           label="Eudaimonia fee"
           value={platformFeeIsZero ? "not active" : `$${data.platformFee} (1%)`}
@@ -188,5 +206,5 @@ function computeCharityReceived(data: ReceiptData): string {
   if (!Number.isFinite(donor) || !Number.isFinite(endaoment) || !Number.isFinite(platform)) {
     return data.amount;
   }
-  return (donor - endaoment - platform).toFixed(3);
+  return trimDecimals((donor - endaoment - platform).toFixed(6));
 }

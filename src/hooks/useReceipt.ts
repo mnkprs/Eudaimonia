@@ -23,9 +23,14 @@ import { isHex } from 'viem';
 import type { Hex } from 'viem';
 import { baseSepolia } from 'wagmi/chains';
 
-import { ROUTER_SUPPORTED_CHAIN_IDS, getRouterAddress } from '@/lib/contracts';
+import {
+  ROUTER_SUPPORTED_CHAIN_IDS,
+  findDonationRouted,
+  getRouterAddress,
+} from '@/lib/contracts';
 import { getPublicClient } from '@/lib/publicClient';
-import { getCharity } from '@/lib/endaoment/registry';
+import { getCharityByOrgAddress } from '@/lib/endaoment/registry';
+import { ENDAOMENT_ORG_ADDRESSES, type OrgAddressMap } from '@/lib/endaoment/orgs';
 import { resolveOrgMetadata } from '@/lib/endaoment/metadata';
 import { verifyDonation } from '@/lib/endaoment/verify';
 import {
@@ -33,9 +38,8 @@ import {
   DecodeReceiptError,
   type BuildReceiptBundleInput,
 } from '@/lib/receipt/buildReceiptBundle';
-import { getCampaigns } from '@/lib/campaigns';
 import type { ReceiptBundle } from '@/types/receipt';
-import type { Charity, VerificationFailureReason } from '@/types/charity';
+import type { VerificationFailureReason } from '@/types/charity';
 
 // ---------------------------------------------------------------------------
 // Polling constants (named — no magic numbers)
@@ -111,6 +115,8 @@ export interface ResolverOptions {
   onState: (state: ReceiptState) => void;
   /** Caller-owned AbortSignal; resolver stops when aborted. */
   signal: AbortSignal;
+  /** Org-address map used to attribute the routed org to a charity. Defaults to production. */
+  orgAddressMap?: OrgAddressMap;
 }
 
 /**
@@ -120,7 +126,13 @@ export interface ResolverOptions {
  * The `useReceipt` hook wraps this with `useEffect` + `AbortController`.
  */
 export async function runReceiptResolver(options: ResolverOptions): Promise<void> {
-  const { txid: rawTxid, chainId = baseSepolia.id, onState, signal } = options;
+  const {
+    txid: rawTxid,
+    chainId = baseSepolia.id,
+    onState,
+    signal,
+    orgAddressMap = ENDAOMENT_ORG_ADDRESSES,
+  } = options;
 
   const prefersReducedMotion = readPrefersReducedMotion();
 
@@ -253,32 +265,25 @@ export async function runReceiptResolver(options: ResolverOptions): Promise<void
 
     if (signal.aborted) return;
 
-    // --- Resolve charity from on-chain org address ---
-    // Strategy: scan all campaigns for one whose configured org address on
-    // this chain matches what the registry has. When ENDAOMENT_ORG_ADDRESSES is
-    // populated (E5.1 lands), the first match is used. When the map is empty
-    // (dev / test / E5.1 not yet landed), we fall back to the first campaign so
-    // verifyDonation can still run and report no-org-address-for-chain rather
-    // than crashing.
-    const campaigns = getCampaigns();
-    const firstCampaign = campaigns[0];
-    const fallbackCharity = getCharity(firstCampaign?.id ?? '', chainId) ?? {
-      id: '',
-      name: 'Unknown',
-      ein: '',
-      endaomentOrgAddress: null,
-      baseScanUrl: null,
-    };
+    // --- Resolve charity from the on-chain DonationRouted org ---
+    // The donated-to org is whatever the router emitted, not a guess: map it
+    // back to its campaign. Unknown org means we cannot attribute the donation.
+    let routed: ReturnType<typeof findDonationRouted>;
+    try {
+      routed = findDonationRouted(receipt.logs);
+    } catch {
+      emit({ status: 'unverified', reason: 'no-routed-log', prefersReducedMotion });
+      return;
+    }
+    if (!routed) {
+      emit({ status: 'unverified', reason: 'no-routed-log', prefersReducedMotion });
+      return;
+    }
 
-    // Look for a campaign whose org address is populated on this chain.
-    // When found, that's the charity to verify against.
-    let charityForVerify: Charity = fallbackCharity;
-    for (const campaign of campaigns) {
-      const candidate = getCharity(campaign.id, chainId);
-      if (candidate?.endaomentOrgAddress !== null && candidate !== undefined) {
-        charityForVerify = candidate;
-        break;
-      }
+    const charityForVerify = getCharityByOrgAddress(routed.org, chainId, orgAddressMap);
+    if (!charityForVerify) {
+      emit({ status: 'unverified', reason: 'org-mismatch', prefersReducedMotion });
+      return;
     }
 
     // --- Verify donation ---

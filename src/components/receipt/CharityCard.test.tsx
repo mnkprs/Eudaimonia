@@ -76,3 +76,27 @@ describe("CharityCard", () => {
     expect(html).toContain("XY");
   });
 });
+
+describe("CharityCard on Base Sepolia", () => {
+  const SEPOLIA: ReceiptData = { ...FIXTURE, network: "Base Sepolia" };
+
+  test("labels the recipient a testnet stand-in, not a verified Endaoment fund", () => {
+    const html = renderToString(<CharityCard data={SEPOLIA} />);
+    expect(html).toContain("Testnet stand-in");
+    expect(html).not.toContain("Verified by Endaoment");
+    expect(html).not.toContain("Endaoment Org Fund");
+    expect(html).toContain(SEPOLIA.ein);
+  });
+
+  test("keeps the explorer link on the stand-in badge", () => {
+    const url = "https://sepolia.basescan.org/address/0xabc123";
+    const html = renderToString(<CharityCard data={SEPOLIA} baseScanUrl={url} />);
+    expect(html).toContain(`href="${url}"`);
+  });
+
+  test("mainnet copy is unchanged", () => {
+    const html = renderToString(<CharityCard data={FIXTURE} />);
+    expect(html).toContain("Endaoment Org Fund");
+    expect(html).not.toContain("Testnet stand-in");
+  });
+});

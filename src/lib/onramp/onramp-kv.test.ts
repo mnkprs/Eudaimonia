@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createInMemoryKvStore } from "@/lib/kv/kv-store";
 import { createSessionStore } from "./session-store";
-import { onrampSessionStore } from "./onramp-kv";
+import { isUsableKvConfig, onrampSessionStore } from "./onramp-kv";
 import type { OnrampSession } from "@/types/onramp";
 
 /** A freshly-minted session, as the POST /session route would persist it. */
@@ -64,5 +64,25 @@ describe("onrampSessionStore (cross-instance durability, security review HIGH)",
     await expect(
       instanceB.update(SESSION.id, { status: "settled" }),
     ).rejects.toThrow(/cos_xinst_1/);
+  });
+});
+
+describe("isUsableKvConfig", () => {
+  it("accepts real https credentials", () => {
+    expect(isUsableKvConfig("https://real-123.upstash.io", "AXabc")).toBe(true);
+  });
+
+  it("rejects missing or non-https config", () => {
+    expect(isUsableKvConfig(undefined, "tok")).toBe(false);
+    expect(isUsableKvConfig("https://real.upstash.io", undefined)).toBe(false);
+    expect(isUsableKvConfig("http://real.upstash.io", "tok")).toBe(false);
+    expect(isUsableKvConfig("https://real.upstash.io", "")).toBe(false);
+  });
+
+  it("rejects the .env.local.example placeholders", () => {
+    expect(isUsableKvConfig("https://example-kv.upstash.io", "tok")).toBe(false);
+    expect(isUsableKvConfig("https://real.upstash.io", "replace_me")).toBe(
+      false,
+    );
   });
 });

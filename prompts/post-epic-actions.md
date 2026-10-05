@@ -1,12 +1,14 @@
 # Post-Epic Action Backlog
 
 > **Purpose:** Single home for (1) the **human-only go-live checklist** — external accounts, credentials, funded keys, on-chain actions, and legal/compliance work that an agent *cannot* do for you — and (2) deferred engineering follow-ups and open decisions accumulated across Epics 1–6. Per project decision, these are **not actioned mid-epic** — they are revisited **after all planned epics are shipped**.
-> **Status:** OPEN backlog — last updated 2026-09-10 (engineering rows reconciled against `main` @ `08e02f7`; resolved rows moved into each section's "Resolved" note). Operator steps for Epics 3/4 live in [HUMAN-ACTIONS.md](HUMAN-ACTIONS.md). **Next engineering epic:** the settled-webhook → `routeHeld` relayer + per-session commitment (ADR 0002 amendment) — not yet planned.
+> **Status:** OPEN backlog — last updated 2026-10-02. **Scope change (2026-10-01, [ADR 0003](../docs/adr/0003-testnet-demo.md)):** Eudaimonia is a portfolio project; the finished product is a **public Base Sepolia demo** (Epic 8, [#69](https://github.com/mnkprs/Eudaimonia/issues/69)), so the real-money go-live checklist below is **out of scope** and kept only as the documented production design. Operator steps for the demo live in [HUMAN-ACTIONS.md](HUMAN-ACTIONS.md) and `contracts/DEPLOY.md` §0. **Next engineering epic after Epic 8 (only if a real launch is ever pursued):** the settled-webhook → `routeHeld` relayer + per-session commitment (E3.4).
 > **Convention:** Each item links its origin (epic plan, env line, or runbook) and a one-line trigger/condition for when it becomes actionable. `VERIFY` = needs a quick confirmation it isn't already resolved.
 
 ---
 
 ## 🔑 Human-Only Go-Live Checklist (an agent cannot do these)
+
+> ⏸ **Out of scope (portfolio) — 2026-10-01.** Nothing in sections A–F is required for the public testnet demo. Kept as the real-money launch checklist in case the project ever goes live; see [ADR 0003](../docs/adr/0003-testnet-demo.md).
 
 > Everything below requires a real account, a funded wallet, a signed legal document, or an irreversible on-chain broadcast. None of it can be completed from inside the codebase — it needs **you**, with credentials and judgment. Work top-to-bottom; later groups depend on earlier ones (accounts → keys → deploy → wire-up → launch).
 
@@ -97,6 +99,11 @@
 | # | Item | Status | Trigger / Notes |
 |---|---|---|---|
 | E3.4 | Automate settled-webhook → `routeHeld` (relayer) + per-session commitment | OPEN — **next epic** | Settled on-ramp USDC sits held in the router until an operator runs `routeHeld` by hand (HUMAN-ACTIONS §5.4). `routeHeld` can only bound `amount` at the pooled balance (review S1); the per-session commitment design ships with the relayer. See `docs/adr/0002-fees-on-chain.md`. |
+| E3.5 | Stripe network name: the session builder sends `destination_network=base-sepolia` | PARKED (Stripe path) | `createSession.ts` passes `NEXT_PUBLIC_CHAIN` straight through; Stripe's documented network values are names like `base`. Unverified (no approved Stripe key) — confirm against a sandbox before any Stripe run. |
+| E3.6 | `/processing/[sessionId]` reads `inMemorySessionStore`, not `onrampSessionStore()` | PARKED (Stripe path) | With Vercel KV configured, sessions written by the API routes are invisible to this page → 404. Also duplicates `toStatusResponse`. |
+| E3.7 | Nothing routes the donor to `/processing` | PARKED (Stripe path) | The Stripe session is created with no return/success URL, so after the hosted on-ramp the donor never reaches the processing page. |
+| E3.8 | ProcessingClient redirects to Stripe's settlement tx | PARKED (Stripe path) | That tx is a plain USDC transfer into the router (no `DonationRouted`), so `/receipt/[txid]` can't render it. Receipts must cite the `routeHeld` tx and decode `HeldDonationRouted` — lands with the relayer (E3.4). |
+| E3.9 | Stripe on-ramp availability | PARKED (external) | Stripe requires an approved on-ramp application even for sandbox, and documents USDC-on-Base as unsupported in the EU. |
 
 > Resolved (no action): E3.1 Vercel KV session store (`src/lib/kv/vercel-kv-store.ts`, PR #25); E3.2 server-side rate limiting on `/api/onramp/session` (`src/lib/ratelimit/`); E3.3 webhook-handler comment now states the route acks with 200 (confirmed 2026-09-10); L2 dead `stubSubmit.ts` deleted.
 
@@ -135,6 +142,17 @@
 > Fixed & green this session (no action): review H1 (ESLint `set-state-in-effect` error in `useReceipt`), H2 (`PizzaTracker` keyboard/touch a11y for fee detail), H3 (`ReceiptSkeleton` `role="status"`/`aria-live`), M4 (gross-side fee-split invariant guard in `verify.ts` + `decodeReceipt.ts`) and M1 (`verifyDonation` throw-surface JSDoc). Full suite 755/755, `tsc --noEmit` + ESLint clean, `next build` passing. Remaining review MEDIUM/LOW items (M3 `formatUnits` precision, M5 server `notFound()` for malformed txid, M6 `React.cache()` dedup, function-length, magic-number LOWs) left as optional polish in the [review doc](.claude/reviews/epic-6-receipt-review.md).
 
 ---
+
+## Epic 8 — Public Testnet Demo ([#69](https://github.com/mnkprs/Eudaimonia/issues/69) · [plan](epic-8-testnet-demo-plan.md) · [ADR 0003](../docs/adr/0003-testnet-demo.md))
+
+| # | Item | Status | Trigger / Notes |
+|---|---|---|---|
+| E8.1 | Shared KV for demo limits (Upstash via Vercel Marketplace) | OPTIONAL | Without it, the demo's send lock, per-IP limit and daily cap are per serverless instance (the nonce retry covers the gap). Add if demo traffic ever causes nonce collisions. |
+| E8.2 | Run `DeployedRouterFork.t.sol` against the Sepolia demo in CI | OPTIONAL | Needs `BASE_RPC_URL`/`ROUTER_ADDRESS`/`ENDAOMENT_ORG` as CI secrets and a pinned `FORK_BLOCK`. |
+| E8.3 | Show `LiveReceiptStrip` on Base Sepolia and link its rows to receipts | OPTIONAL | Currently mainnet-only (#37); its 2,000-block lookback (~1 h) would usually be empty with demo traffic. |
+| E8.4 | Dead `#` links on the receipt: "Visit charity" (`CharityCard` default `href`) and footer "Contact" | OPEN (polish) | Point "Visit charity" at the charity's site from metadata, and give Contact a real target or drop it. |
+| E8.5 | Production-design copy on the demo: "Card or Apple Pay" in `HowItWorks` and the 404 screen | OPEN (polish) | Accurate for the production design; consider a demo-mode variant like the hero trust row. |
+| E8.6 | `sepolia.base.org` serves stale reads (nonce, balances) behind its load balancer | NOTED | The demo route uses `BASE_SEPOLIA_RPC_URL` (publicnode) server-side; the nonce retry covers the rest. An authenticated RPC would remove the issue. |
 
 ## Epic 7 — Production Readiness ([#8](https://github.com/mnkprs/Philotimo/issues/8) · [plan](prompts/epic-7-production-readiness-plan.md))
 

@@ -1,5 +1,7 @@
 import { EndaomentBadge } from "@/components/brand/EndaomentBadge";
+import { deriveMonogram } from "@/lib/receipt/format";
 import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
+import { isTestnetNetwork } from "@/lib/chain";
 import { colors } from "@/lib/tokens";
 import type { ReceiptData } from "@/types/receipt";
 
@@ -16,15 +18,9 @@ interface CharityCardProps {
   baseScanUrl?: string;
 }
 
-function deriveMonogram(name: string): string {
-  const parts = name.split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "··";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
-}
-
 export function CharityCard({ data, monogram, href = "#", baseScanUrl }: CharityCardProps) {
   const initials = monogram ?? deriveMonogram(data.charity);
+  const isTestnet = isTestnetNetwork(data.network);
 
   return (
     <section style={{ maxWidth: 1240, margin: "0 auto", padding: "0 64px 56px" }}>
@@ -81,7 +77,9 @@ export function CharityCard({ data, monogram, href = "#", baseScanUrl }: Charity
               marginBottom: 10,
             }}
           >
-            501(c)(3) · EIN {data.ein} · Endaoment Org Fund
+            {isTestnet
+              ? `501(c)(3) · EIN ${data.ein} · Testnet stand-in contract`
+              : `501(c)(3) · EIN ${data.ein} · Endaoment Org Fund`}
           </div>
           <p
             style={{
@@ -97,7 +95,11 @@ export function CharityCard({ data, monogram, href = "#", baseScanUrl }: Charity
             {data.mission}
           </p>
           <div style={{ marginTop: 12 }}>
-            <EndaomentBadge size="sm" href={baseScanUrl} />
+            <EndaomentBadge
+              size="sm"
+              href={baseScanUrl}
+              variant={isTestnet ? "testnet-stand-in" : "verified"}
+            />
           </div>
         </div>
 

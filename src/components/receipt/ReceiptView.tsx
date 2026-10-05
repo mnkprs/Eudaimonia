@@ -36,7 +36,7 @@ export function ReceiptView({ txid, chainId }: ReceiptViewProps) {
   }
 
   if (state.status === "ready") {
-    return <EudaimoniaReceipt bundle={state.bundle} />;
+    return <EudaimoniaReceipt bundle={state.bundle} chainId={chainId} />;
   }
 
   // All error states — derive baseScanUrl for the fallback link.

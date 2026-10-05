@@ -1,7 +1,7 @@
-import type { Address } from "viem";
+import { isAddress, isAddressEqual, type Address } from "viem";
 import { base, baseSepolia } from "wagmi/chains";
 
-import { getCampaignById } from "@/lib/campaigns";
+import { CAMPAIGNS, getCampaignById } from "@/lib/campaigns";
 import type { Charity } from "@/types/charity";
 
 import {
@@ -58,4 +58,27 @@ export function getCharity(
     endaomentOrgAddress: address,
     baseScanUrl,
   };
+}
+
+/**
+ * Reverse lookup: resolves the `Charity` whose configured org address on
+ * `chainId` equals `org` (case-insensitive). Used to attribute an on-chain
+ * `DonationRouted.org` back to a campaign.
+ *
+ * @returns The `Charity` view, or `undefined` for an unknown org, a malformed
+ *   address, or a chain with no configured entities.
+ */
+export function getCharityByOrgAddress(
+  org: Address | string,
+  chainId: number,
+  map: OrgAddressMap = ENDAOMENT_ORG_ADDRESSES,
+): Charity | undefined {
+  if (!isAddress(org, { strict: false })) return undefined;
+
+  const campaign = CAMPAIGNS.find((candidate) => {
+    const resolved = getOrgAddress(candidate.ein, chainId, map);
+    return resolved !== undefined && isAddressEqual(resolved, org);
+  });
+
+  return campaign ? getCharity(campaign.id, chainId, map) : undefined;
 }

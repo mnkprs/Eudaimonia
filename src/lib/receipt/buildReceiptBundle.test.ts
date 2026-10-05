@@ -75,6 +75,19 @@ function buildValid() {
 // Top-level shape
 // ---------------------------------------------------------------------------
 
+describe("display amounts (receipt UI contract: plain dollar strings, UI adds $)", () => {
+  it("formats the gross as a 2-decimal dollar string without a currency symbol", () => {
+    expect(buildValid().data.amount).toBe("1.00");
+  });
+
+  it("formats fees without trailing zeros (min 2 decimals) and no symbol", () => {
+    const { data } = buildValid();
+    expect(data.platformFee).toBe("0.01");
+    expect(data.endaomentFee).toBe("0.01485");
+    expect(data.donorFee).toBe("0.00");
+  });
+});
+
 describe("buildReceiptBundle", () => {
   it("returns a ReceiptBundle with data + stages", () => {
     const bundle = buildValid();
@@ -136,14 +149,14 @@ describe("buildReceiptBundle", () => {
   // -------------------------------------------------------------------------
 
   describe("D2 — Fee fields from on-chain values", () => {
-    it("ReceiptData.platformFee is the Eudaimonia 1% fee (0.010000 USDC)", () => {
-      // EUDAIMONIA_FEE = 10_000n → formatUnits → "0.01", padded = "0.010000"
-      expect(buildValid().data.platformFee).toBe("0.010000");
+    it("ReceiptData.platformFee is the Eudaimonia 1% fee (0.01 USDC)", () => {
+      // EUDAIMONIA_FEE = 10_000n → "0.010000" → display-trimmed to "0.01"
+      expect(buildValid().data.platformFee).toBe("0.01");
     });
 
-    it("ReceiptData.endaomentFee is the Endaoment protocol fee (0.014850 USDC)", () => {
-      // ENDAOMENT_FEE = 14_850n → formatUnits → "0.01485", padded = "0.014850"
-      expect(buildValid().data.endaomentFee).toBe("0.014850");
+    it("ReceiptData.endaomentFee is the Endaoment protocol fee (0.01485 USDC)", () => {
+      // ENDAOMENT_FEE = 14_850n → "0.014850" → display-trimmed to "0.01485"
+      expect(buildValid().data.endaomentFee).toBe("0.01485");
     });
 
     it("stage 4 (Eudaimonia fee) is ACTIVE for a router tx", () => {
@@ -391,6 +404,35 @@ describe("buildReceiptBundle", () => {
         confirmations: FIXTURE_CONFIRMATIONS,
       });
       expect(bundle.data.network).toBe("Unknown");
+    });
+  });
+
+  describe("stage copy variant by chain", () => {
+    const bundleFor = (chainId: number) =>
+      buildReceiptBundle({
+        receipt: MOCK_SEPOLIA_RECEIPT,
+        routerAddress: ROUTER_ADDRESS,
+        orgAddress: ORG_ENTITY,
+        chainId,
+        txid: MOCK_SEPOLIA_RECEIPT.transactionHash,
+        charity: STUB_CHARITY,
+        orgMetadata: STUB_ORG_METADATA,
+        block: STUB_BLOCK,
+        confirmations: FIXTURE_CONFIRMATIONS,
+      });
+
+    it("uses honest testnet-demo stage copy on Base Sepolia", () => {
+      const routed = bundleFor(84532).stages[2];
+      expect(routed.contract).toBe("Eudaimonia · Router");
+      expect(JSON.stringify(bundleFor(84532).stages)).not.toMatch(
+        /OrgFundFactory|multisig|onramp/i,
+      );
+    });
+
+    it("keeps the Endaoment stage copy on Base mainnet", () => {
+      expect(bundleFor(8453).stages[2].contract).toBe(
+        "Endaoment · OrgFundFactory",
+      );
     });
   });
 

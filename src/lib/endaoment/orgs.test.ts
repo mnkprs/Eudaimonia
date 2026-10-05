@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 import { base, baseSepolia } from "wagmi/chains";
 import type { Address } from "viem";
@@ -30,6 +33,24 @@ describe("ENDAOMENT_ORG_ADDRESSES (production map)", () => {
         expect(addr).not.toBe(`0x${"0".repeat(40)}`);
       }
     }
+  });
+});
+
+describe("Base Sepolia demo stand-ins (Epic 8)", () => {
+  const deployment = JSON.parse(
+    readFileSync(join(process.cwd(), "contracts/deployments/base-sepolia.json"), "utf-8"),
+  ) as { contracts: Record<string, { address: string }> };
+  const standIn = (campaignId: string) =>
+    deployment.contracts[`EndaomentOrgStandIn:${campaignId}`]?.address;
+
+  it.each([
+    ["93-1057665", "pcrf"],
+    ["27-3521132", "wck"],
+    ["95-1831116", "directrelief"],
+  ])("EIN %s resolves to the deployed %s stand-in on Base Sepolia", (ein, campaignId) => {
+    const expected = standIn(campaignId);
+    expect(expected).toBeDefined();
+    expect(getOrgAddress(ein, baseSepolia.id)?.toLowerCase()).toBe(expected?.toLowerCase());
   });
 });
 

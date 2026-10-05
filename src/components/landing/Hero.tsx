@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+
 import { CycleWord } from "@/components/landing/CycleWord";
 import { HeroReceiptMockup } from "@/components/landing/HeroReceiptMockup";
 import { MeaningsCard } from "@/components/landing/MeaningsCard";
@@ -6,7 +8,28 @@ import { EyebrowLabel } from "@/components/ui/EyebrowLabel";
 import { PillButton } from "@/components/ui/PillButton";
 import { colors } from "@/lib/tokens";
 
-export function Hero() {
+interface HeroProps {
+  /** Path of a real sample receipt; the CTA stays disabled while there is none. */
+  exampleReceiptHref?: string | null;
+  /** Testnet demo mode: the trust row must not promise cards or tax receipts. */
+  isDemo?: boolean;
+}
+
+const LIVE_TRUST_SIGNALS = [
+  "$1 minimum",
+  "Card · Apple Pay · Google Pay",
+  "501(c)(3) tax-deductible via Endaoment",
+] as const;
+
+const DEMO_TRUST_SIGNALS = [
+  "$1 test donations",
+  "Testnet demo — no real money",
+  "Test USDC on Base Sepolia",
+] as const;
+
+export function Hero({ exampleReceiptHref = null, isDemo = false }: HeroProps = {}) {
+  const trustSignals = isDemo ? DEMO_TRUST_SIGNALS : LIVE_TRUST_SIGNALS;
+
   return (
     <section className="relative overflow-hidden px-4 pb-20 pt-40 sm:px-6 lg:px-16">
       <div
@@ -70,10 +93,10 @@ export function Hero() {
                 Choose a cause
               </PillButton>
               <PillButton
-                href="#example-receipt"
+                href={exampleReceiptHref ?? "#example-receipt"}
                 variant="secondary"
                 size="lg"
-                disabled
+                disabled={exampleReceiptHref === null}
                 icon={<ArrowRight color="currentColor" />}
               >
                 See an example receipt
@@ -87,11 +110,14 @@ export function Hero() {
                 fontFeatureSettings: '"tnum","ss01"',
               }}
             >
-              <span>$1 minimum</span>
-              <span className="inline-block h-[3px] w-[3px] rounded-full bg-steel" />
-              <span>Card · Apple Pay · Google Pay</span>
-              <span className="inline-block h-[3px] w-[3px] rounded-full bg-steel" />
-              <span>501(c)(3) tax-deductible via Endaoment</span>
+              {trustSignals.map((signal, index) => (
+                <Fragment key={signal}>
+                  {index > 0 && (
+                    <span className="inline-block h-[3px] w-[3px] rounded-full bg-steel" />
+                  )}
+                  <span>{signal}</span>
+                </Fragment>
+              ))}
             </div>
           </div>
 
@@ -99,7 +125,7 @@ export function Hero() {
           <MeaningsCard />
         </div>
 
-        <HeroReceiptMockup />
+        <HeroReceiptMockup exampleReceiptHref={exampleReceiptHref} />
       </div>
     </section>
   );

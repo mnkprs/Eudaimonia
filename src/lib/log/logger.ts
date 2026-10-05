@@ -26,6 +26,8 @@ export const REDACTED_KEYS = [
   "STRIPE_SECRET_KEY",
   "STRIPE_ONRAMP_WEBHOOK_SECRET",
   "KV_REST_API_TOKEN",
+  "DEMO_WALLET_PRIVATE_KEY",
+  "privateKey",
   "authorization",
   "clientSecret",
   "donorEmail",

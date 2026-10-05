@@ -43,6 +43,11 @@ function formatAmountError(cents: number): string {
   return `Amount cannot exceed ${USD_FORMATTER.format(cents / 100)}.`;
 }
 
+export interface ValidateAmountOptions {
+  /** Upper bound in cents. Defaults to {@link MAX_AMOUNT_CENTS}. */
+  readonly maxCents?: number;
+}
+
 /**
  * Parse and validate a donor-entered amount. Accepts either a raw string
  * (from a text input) or a number (from a preset chip). On success, returns
@@ -50,7 +55,9 @@ function formatAmountError(cents: number): string {
  */
 export function validateAmount(
   input: string | number,
+  options: ValidateAmountOptions = {},
 ): ValidationResult<number> {
+  const maxCents = options.maxCents ?? MAX_AMOUNT_CENTS;
   let cents: number;
 
   if (typeof input === "number") {
@@ -78,8 +85,8 @@ export function validateAmount(
     };
   }
 
-  if (cents > MAX_AMOUNT_CENTS) {
-    return { ok: false, error: formatAmountError(MAX_AMOUNT_CENTS) };
+  if (cents > maxCents) {
+    return { ok: false, error: formatAmountError(maxCents) };
   }
 
   return { ok: true, value: cents };

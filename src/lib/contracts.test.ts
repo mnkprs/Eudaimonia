@@ -16,6 +16,7 @@ import {
   DONATION_ROUTED_EVENT,
   ROUTER_SUPPORTED_CHAIN_IDS,
   decodeDonationRoutedLog,
+  findDonationRouted,
   getRouterAddress,
 } from "./contracts";
 
@@ -205,5 +206,74 @@ describe("decodeDonationRoutedLog", () => {
     expect(() => decodeDonationRoutedLog({ topics, data })).toThrow(
       /signature/i,
     );
+  });
+});
+
+describe("findDonationRouted", () => {
+  const DONOR = getAddress("0xe0adb1b3c4d5e6f708192a3b4c5d6e7f8a097bb0");
+  const ORG = getAddress("0x10fda5891234567890abcdef1234567890abcdef");
+  const ROUTER = getAddress("0x1111111111111111111111111111111111111111");
+  const TRIPLE = [
+    { type: "uint256" },
+    { type: "uint256" },
+    { type: "uint256" },
+  ] as const;
+
+  const routedLog = (data?: Hex) => ({
+    address: ROUTER,
+    topics: encodeEventTopics({
+      abi: [DONATION_ROUTED_EVENT],
+      eventName: "DonationRouted",
+      args: { donor: DONOR, org: ORG },
+    }) as [Hex, ...Hex[]],
+    data:
+      data ??
+      encodeAbiParameters(TRIPLE, [
+        BigInt(100_000_000),
+        BigInt(1_000_000),
+        BigInt(99_000_000),
+      ]),
+  });
+
+  const transferLog = {
+    address: SAMPLE_ADDRESS,
+    topics: encodeEventTopics({
+      abi: [
+        parseAbiItem(
+          "event Transfer(address indexed from, address indexed to, uint256 value)",
+        ),
+      ],
+      eventName: "Transfer",
+      args: { from: DONOR, to: ORG },
+    }) as [Hex, ...Hex[]],
+    data: encodeAbiParameters([{ type: "uint256" }], [BigInt(1)]),
+  };
+
+  it("returns the decoded args plus the emitting address", () => {
+    const found = findDonationRouted([transferLog, routedLog()]);
+
+    expect(found).toEqual({
+      address: ROUTER,
+      donor: DONOR,
+      org: ORG,
+      gross: BigInt(100_000_000),
+      fee: BigInt(1_000_000),
+      net: BigInt(99_000_000),
+    });
+  });
+
+  it("returns null when no log carries the DonationRouted topic", () => {
+    expect(findDonationRouted([transferLog])).toBeNull();
+    expect(findDonationRouted([])).toBeNull();
+  });
+
+  it("ignores logs with empty topics", () => {
+    expect(
+      findDonationRouted([{ address: ROUTER, topics: [], data: "0x" }]),
+    ).toBeNull();
+  });
+
+  it("throws when a DonationRouted-topic log has a corrupt payload (matches verify.ts)", () => {
+    expect(() => findDonationRouted([routedLog("0x1234")])).toThrow();
   });
 });

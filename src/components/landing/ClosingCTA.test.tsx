@@ -28,8 +28,8 @@ describe("ClosingCTA", () => {
     expect(render()).toContain("Pick a cause");
   });
 
-  test("renders both CTAs", () => {
-    const html = render();
+  test("renders both CTAs when a sample receipt exists", () => {
+    const html = renderToString(<ClosingCTA exampleReceiptHref="/receipt/0xabc" />);
     expect(html).toContain("Choose a cause");
     expect(html).toContain("See a receipt first");
   });

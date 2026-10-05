@@ -20,6 +20,8 @@
  */
 
 import { formatUnits } from "viem";
+
+import { trimDecimals } from "@/lib/receipt/format";
 import type { Address, Hex as ViemHex, Log } from "viem";
 import { base, baseSepolia } from "wagmi/chains";
 
@@ -95,6 +97,12 @@ function formatUsdc(value: bigint): string {
   const [integer, fraction = ""] = raw.split(".");
   const paddedFraction = fraction.padEnd(6, "0").slice(0, 6);
   return `${integer}.${paddedFraction}`;
+}
+
+/** USDC base units → 2-decimal dollar string, e.g. 2_000_000n → "2.00" (truncates sub-cent dust). */
+function formatDollars(value: bigint): string {
+  const [integer, fraction] = formatUsdc(value).split(".");
+  return `${integer}.${fraction!.slice(0, 2)}`;
 }
 
 /** Thousands-separator formatting with explicit en-US locale. */
@@ -221,8 +229,8 @@ export function buildReceiptBundle(
     charity: orgMetadata.name,
     ein: charity.ein,
     mission: orgMetadata.mission,
-    // `amount` = fiat display; USDC ≈ USD so prefix with $
-    amount: `$${grossFormatted}`,
+    // `amount` = plain 2-dp dollar string (USDC ≈ USD); components add the `$`.
+    amount: formatDollars(gross),
     amountUsdc: grossFormatted,
     date: dateStr,
     time: timeStr,
@@ -234,13 +242,13 @@ export function buildReceiptBundle(
     // D1: no ETH or swap rate in a USDC-only on-chain tx
     ethIn: "—",
     rate: "Off-chain onramp",
-    platformFee: eudaimoniaFeeFormatted,
-    endaomentFee: endaomentFeeFormatted,
+    platformFee: trimDecimals(eudaimoniaFeeFormatted),
+    endaomentFee: trimDecimals(endaomentFeeFormatted),
     // orgFund: reuse the org Entity address (no separate factory in this flow)
     orgFund: org,
     charityAddr: org,
     // donorFee: no explicit donor network fee surfaced on-chain for this tx
-    donorFee: "0.000000",
+    donorFee: "0.00",
   };
 
   // --- Step 4: Build stages (D1 usdcProvenance + D5 same-block) -------------
@@ -289,6 +297,8 @@ export function buildReceiptBundle(
       relativeSeconds: 0,
     },
     eudaimoniaFeeActive: true,
+    // Base Sepolia donations go to testnet stand-ins, so the copy must say so
+    variant: input.chainId === baseSepolia.id ? "testnet-demo" : "default",
   });
 
   return { data, stages };

@@ -12,20 +12,11 @@
  */
 
 import * as Sentry from "@sentry/nextjs";
-import {
-  toEventSelector,
-  type Address,
-  type Log,
-} from "viem";
 
-import { CAMPAIGNS } from "@/lib/campaigns";
-import {
-  getRouterAddress,
-  decodeDonationRoutedLog,
-  DONATION_ROUTED_EVENT,
-} from "@/lib/contracts";
+import { getRouterAddress, findDonationRouted } from "@/lib/contracts";
 import { getPublicClient } from "@/lib/publicClient";
-import { getOrgAddress, ENDAOMENT_ORG_ADDRESSES } from "@/lib/endaoment/orgs";
+import { ENDAOMENT_ORG_ADDRESSES } from "@/lib/endaoment/orgs";
+import { getCharityByOrgAddress } from "@/lib/endaoment/registry";
 import { decodeRouterReceipt } from "@/lib/receipt/decodeReceipt";
 import type { OrgAddressMap } from "@/lib/endaoment/orgs";
 
@@ -50,52 +41,12 @@ export interface ReceiptMetadata {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-const DONATION_ROUTED_TOPIC = toEventSelector(
-  DONATION_ROUTED_EVENT,
-) as `0x${string}`;
-
 /**
  * Formats a USDC base-unit `bigint` as a decimal string with 6 decimal places.
  * e.g. `975_150n` → `"0.975150"`.
  */
 function formatUsdc(amount: bigint): string {
   return (Number(amount) / 1_000_000).toFixed(6);
-}
-
-/** True when `log` is a DonationRouted event (matches by topic-0). */
-function isDonationRoutedLog(log: Log): boolean {
-  return (
-    Array.isArray(log.topics) &&
-    log.topics.length > 0 &&
-    typeof log.topics[0] === "string" &&
-    (log.topics[0] as string).toLowerCase() ===
-      DONATION_ROUTED_TOPIC.toLowerCase()
-  );
-}
-
-/**
- * Reverse-maps an on-chain org `Address` to a campaign name by scanning all
- * known campaigns and checking whether their configured EIN maps to `orgAddress`
- * on `chainId`.
- *
- * Injectable `map` argument mirrors `getCharity`'s signature so tests can
- * exercise the lookup without touching the sparse production map.
- */
-function findCharityNameByOrgAddress(
-  orgAddress: Address,
-  chainId: number,
-  map: OrgAddressMap,
-): string | null {
-  const orgLower = orgAddress.toLowerCase();
-
-  for (const campaign of CAMPAIGNS) {
-    const resolved = getOrgAddress(campaign.ein, chainId, map);
-    if (resolved && resolved.toLowerCase() === orgLower) {
-      return campaign.name;
-    }
-  }
-
-  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,23 +92,21 @@ export async function loadReceiptForMetadata(
     // `decodeRouterReceipt` needs the org address to classify the
     // "router → org" Transfer leg. We extract it from the DonationRouted event
     // first so we can then run the full decode with the real address.
-    const routedLog = receipt.logs.find(isDonationRoutedLog);
-    if (!routedLog) return null;
-
-    let orgAddress: Address;
+    let routed: ReturnType<typeof findDonationRouted>;
     try {
-      const event = decodeDonationRoutedLog(routedLog);
-      orgAddress = event.org;
+      routed = findDonationRouted(receipt.logs);
     } catch {
       return null;
     }
+    if (!routed) return null;
+    const orgAddress = routed.org;
 
     // --- 4. Full decode with the known org address --------------------------
     const decoded = decodeRouterReceipt(receipt, routerAddress, orgAddress);
     if (!decoded.ok) return null;
 
     // --- 5. Reverse-map org address to charity name -------------------------
-    const charityName = findCharityNameByOrgAddress(orgAddress, chainId, map);
+    const charityName = getCharityByOrgAddress(orgAddress, chainId, map)?.name;
     if (!charityName) return null;
 
     // --- 6. Format the amount -----------------------------------------------

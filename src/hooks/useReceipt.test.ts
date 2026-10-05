@@ -21,7 +21,11 @@ import { baseSepolia } from "wagmi/chains";
 
 import {
   FIXTURE_CHAIN_ID,
+  FIXTURE_ORG_MAP,
   FIXTURE_TX_HASH,
+  WCK_ORG_ENTITY,
+  DIRECT_RELIEF_ORG_ENTITY,
+  buildFixtureReceipt,
   MOCK_SEPOLIA_RECEIPT,
   FIXTURE_BLOCK_NUMBER,
   FIXTURE_BLOCK_TIMESTAMP,
@@ -186,6 +190,7 @@ describe("wrong-network", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: 1, // Ethereum mainnet — unsupported
       onState,
       signal: controller.signal,
@@ -258,6 +263,7 @@ describe("loading → ready", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -298,6 +304,7 @@ describe("loading → ready", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -338,6 +345,7 @@ describe("loading → ready", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -391,6 +399,7 @@ describe("receipt-404 → pending → ready", () => {
     // Act: start resolver, then advance timers to drive the backoff
     const resolverPromise = runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -440,6 +449,7 @@ describe("receipt-404 → pending → ready", () => {
 
     const resolverPromise = runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -484,6 +494,7 @@ describe("not-found", () => {
 
     const resolverPromise = runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -526,6 +537,7 @@ describe("wrong-router", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -561,6 +573,7 @@ describe("unverified", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -595,6 +608,7 @@ describe("unverified", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: baseSepolia.id,
       onState,
       signal: controller.signal,
@@ -625,6 +639,7 @@ describe("unverified", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -640,6 +655,78 @@ describe("unverified", () => {
 // ---------------------------------------------------------------------------
 // Confirmations below threshold → stay pending (poll)
 // ---------------------------------------------------------------------------
+
+describe("charity selection from the DonationRouted org", () => {
+  const verifiedFor = (org: typeof ORG_ENTITY) => ({
+    verified: true as const,
+    org,
+    gross: GROSS,
+    fee: EUDAIMONIA_FEE,
+    net: NET,
+    endaomentFee: ENDAOMENT_FEE,
+  });
+
+  async function resolveWith(receipt: unknown) {
+    stubRouterEnv();
+    const mockClient = createMockClient({
+      getTransactionReceipt: vi.fn().mockResolvedValue(receipt),
+    });
+    mockGetPublicClient.mockReturnValue(
+      mockClient as unknown as ReturnType<typeof getPublicClient>,
+    );
+    mockBuildReceiptBundle.mockReturnValue(
+      MOCK_BUNDLE as unknown as ReturnType<typeof buildReceiptBundle>,
+    );
+    const { states, onState } = captureStates();
+    await runReceiptResolver({
+      txid: FIXTURE_TX_HASH,
+      chainId: FIXTURE_CHAIN_ID,
+      orgAddressMap: FIXTURE_ORG_MAP,
+      onState,
+      signal: new AbortController().signal,
+    });
+    return states;
+  }
+
+  it.each([
+    ["wck", WCK_ORG_ENTITY],
+    ["directrelief", DIRECT_RELIEF_ORG_ENTITY],
+    ["pcrf", ORG_ENTITY],
+  ])("verifies against the %s charity when the routed org matches it", async (id, org) => {
+    mockVerifyDonation.mockResolvedValue(verifiedFor(org));
+
+    const states = await resolveWith(buildFixtureReceipt({ org }));
+
+    expect(mockVerifyDonation).toHaveBeenCalledWith(
+      FIXTURE_TX_HASH,
+      expect.objectContaining({ id, endaomentOrgAddress: org }),
+      FIXTURE_CHAIN_ID,
+    );
+    expect(states[states.length - 1]).toMatchObject({ status: "ready" });
+  });
+
+  it("emits unverified org-mismatch and skips verifyDonation for an unknown org", async () => {
+    const unknownOrg = "0x9999999999999999999999999999999999999999";
+
+    const states = await resolveWith(buildFixtureReceipt({ org: unknownOrg }));
+
+    expect(mockVerifyDonation).not.toHaveBeenCalled();
+    expect(states[states.length - 1]).toMatchObject({
+      status: "unverified",
+      reason: "org-mismatch",
+    });
+  });
+
+  it("emits unverified no-routed-log when the receipt has no DonationRouted log", async () => {
+    const states = await resolveWith({ ...MOCK_SEPOLIA_RECEIPT, logs: [] });
+
+    expect(mockVerifyDonation).not.toHaveBeenCalled();
+    expect(states[states.length - 1]).toMatchObject({
+      status: "unverified",
+      reason: "no-routed-log",
+    });
+  });
+});
 
 describe("confirmations threshold", () => {
   it("stays pending when confirmations are below threshold, resolves when threshold met", async () => {
@@ -673,6 +760,7 @@ describe("confirmations threshold", () => {
 
     const resolverPromise = runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -713,6 +801,7 @@ describe("cleanup / cancellation", () => {
 
     const resolverPromise = runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,
@@ -762,6 +851,7 @@ describe("prefersReducedMotion", () => {
     // Act
     await runReceiptResolver({
       txid: FIXTURE_TX_HASH,
+      orgAddressMap: FIXTURE_ORG_MAP,
       chainId: FIXTURE_CHAIN_ID,
       onState,
       signal: controller.signal,

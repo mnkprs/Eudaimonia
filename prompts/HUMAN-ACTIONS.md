@@ -1,5 +1,34 @@
 # HUMAN-ACTIONS — Operator Runbook to Close Epics 3 & 4
 
+> **Scope change 2026-10-01 ([ADR 0003](../docs/adr/0003-testnet-demo.md)).**
+> Eudaimonia ships as a **public Base Sepolia demo** (Epic 8, #69). Day-to-day
+> operation of that demo is the **Demo ops** section directly below. Steps 1–6
+> further down are the original real-money launch runbook: steps 4–6 (Stripe
+> webhook, live card payment, mainnet) are **out of scope (portfolio)** and kept
+> for reference only; the demo's deploy replaces steps 1–3 (see
+> `contracts/DEPLOY.md` §0).
+
+## Demo ops (Base Sepolia public demo)
+
+Keystores live in `~/.foundry/keystores/eudaimonia-{deployer,treasury,demo}`
+with passwords in `~/.foundry/pw/<name>` (chmod 600). Addresses and contract
+links: `contracts/deployments/base-sepolia.json`.
+
+- **Refill the demo wallet.** Faucet test USDC (faucet.circle.com, Base Sepolia,
+  20 USDC per 2 h) and a little test ETH to the demo wallet, or recycle: each
+  stand-in's `withdraw(demoWallet, amount)` from the deployer, plus plain
+  ERC-20 transfers from the treasury and deployer (see `contracts/DEPLOY.md` §0).
+  When the wallet runs dry the API answers `demo_wallet_empty`; nothing breaks.
+- **Kill switch.** Set `DEMO_DONATIONS_ENABLED` to anything but `true` in Vercel
+  and redeploy → the API answers `demo_disabled`; sample receipts keep working.
+- **Daily cap.** `DEMO_DAILY_CAP` (default 25 donations per day).
+- **Rotate the demo key** (if it ever leaks — it can only spend test USDC and
+  cannot touch the allowlist): `cast wallet new` a fresh keystore, move the old
+  wallet's test USDC/ETH to it, have it `approve(router, max)` once, then
+  replace `DEMO_WALLET_PRIVATE_KEY` in Vercel (Sensitive) and redeploy.
+- **Never** point any of this at Base mainnet: the deploy script, stand-ins and
+  demo API all refuse mainnet chain ids.
+
 > **Rewritten 2026-08-19.** This file was referenced from issues #4/#5 but was
 > never committed from the previous machine; recreated from the issue comments,
 > `contracts/DEPLOY.md`, and the live fork-test run. Every step below is an

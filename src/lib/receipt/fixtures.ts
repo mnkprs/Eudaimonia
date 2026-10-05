@@ -27,6 +27,7 @@ import {
 import { baseSepolia } from "wagmi/chains";
 
 import { DONATION_ROUTED_EVENT } from "@/lib/contracts";
+import type { OrgAddressMap } from "@/lib/endaoment/orgs";
 
 /** Chain the fixture donation settled on. */
 export const FIXTURE_CHAIN_ID = baseSepolia.id;
@@ -111,7 +112,7 @@ function transferLog(
   } as Log;
 }
 
-function donationRoutedLog(logIndex: number): Log {
+function donationRoutedLog(org: Address, logIndex: number): Log {
   return {
     ...baseLogFields,
     address: ROUTER_ADDRESS,
@@ -119,7 +120,7 @@ function donationRoutedLog(logIndex: number): Log {
     topics: encodeEventTopics({
       abi: [DONATION_ROUTED_EVENT],
       eventName: "DonationRouted",
-      args: { donor: DONOR, org: ORG_ENTITY },
+      args: { donor: DONOR, org },
     }) as [Hex, ...Hex[]],
     data: encodeAbiParameters(
       [{ type: "uint256" }, { type: "uint256" }, { type: "uint256" }],
@@ -138,13 +139,17 @@ function donationRoutedLog(logIndex: number): Log {
  *
  * Ordered by `logIndex`; the decoder (D5) relies on log index, not timestamps.
  */
-export const FIXTURE_LOGS: readonly Log[] = [
-  transferLog(DONOR, ROUTER_ADDRESS, GROSS, 0),
-  transferLog(ROUTER_ADDRESS, EUDAIMONIA_TREASURY, EUDAIMONIA_FEE, 1),
-  transferLog(ROUTER_ADDRESS, ENDAOMENT_TREASURY, ENDAOMENT_FEE, 2),
-  transferLog(ROUTER_ADDRESS, ORG_ENTITY, NET_TO_ENTITY, 3),
-  donationRoutedLog(4),
-];
+function buildFixtureLogs(org: Address): readonly Log[] {
+  return [
+    transferLog(DONOR, ROUTER_ADDRESS, GROSS, 0),
+    transferLog(ROUTER_ADDRESS, EUDAIMONIA_TREASURY, EUDAIMONIA_FEE, 1),
+    transferLog(ROUTER_ADDRESS, ENDAOMENT_TREASURY, ENDAOMENT_FEE, 2),
+    transferLog(ROUTER_ADDRESS, org, NET_TO_ENTITY, 3),
+    donationRoutedLog(org, 4),
+  ];
+}
+
+export const FIXTURE_LOGS: readonly Log[] = buildFixtureLogs(ORG_ENTITY);
 
 /**
  * The recorded transaction receipt — the raw input to `decodeRouterReceipt`
@@ -168,6 +173,34 @@ export const MOCK_SEPOLIA_RECEIPT = {
   logsBloom: `0x${"0".repeat(512)}` as Hex,
   logs: FIXTURE_LOGS,
 } as const;
+
+/**
+ * The mock receipt re-targeted at a different org address: same amounts and
+ * participants, with the router to org Transfer and `DonationRouted.org` both
+ * pointing at `org`. Defaults to {@link MOCK_SEPOLIA_RECEIPT}.
+ */
+export function buildFixtureReceipt({
+  org = ORG_ENTITY,
+}: { org?: Address } = {}): typeof MOCK_SEPOLIA_RECEIPT {
+  if (org === ORG_ENTITY) return MOCK_SEPOLIA_RECEIPT;
+  return { ...MOCK_SEPOLIA_RECEIPT, logs: buildFixtureLogs(org) };
+}
+
+/** Fixture org Entity addresses for the other two campaigns (Base Sepolia). */
+export const WCK_ORG_ENTITY: Address =
+  "0x6666666666666666666666666666666666666666";
+export const DIRECT_RELIEF_ORG_ENTITY: Address =
+  "0x7777777777777777777777777777777777777777";
+
+/**
+ * Org-address map for the three campaign EINs on Base Sepolia, pointing at the
+ * fixture org addresses (`ORG_ENTITY` is PCRF). Inject as `orgAddressMap`.
+ */
+export const FIXTURE_ORG_MAP: OrgAddressMap = {
+  "93-1057665": { [baseSepolia.id]: ORG_ENTITY },
+  "27-3521132": { [baseSepolia.id]: WCK_ORG_ENTITY },
+  "95-1831116": { [baseSepolia.id]: DIRECT_RELIEF_ORG_ENTITY },
+};
 
 /**
  * `true` because the fixture routes through the Eudaimonia router and takes the
