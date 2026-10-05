@@ -124,6 +124,7 @@ describe("handleDemoDonate", () => {
     ["below min", { campaignId: "pcrf", grossCents: 99 }, false],
     ["above max", { campaignId: "pcrf", grossCents: 501 }, false],
     ["fractional", { campaignId: "pcrf", grossCents: 1.5 }, false],
+    ["not a preset", { campaignId: "pcrf", grossCents: 337 }, false],
     ["empty campaign", { campaignId: "  ", grossCents: 200 }, false],
   ])("400 invalid_request for %s", async (_name, body, raw) => {
     const h = harness();

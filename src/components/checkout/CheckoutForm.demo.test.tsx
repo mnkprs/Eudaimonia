@@ -15,6 +15,15 @@ const demoProps = {
   policy: DEMO_POLICY,
 };
 
+describe("CheckoutForm — demo order summary", () => {
+  test("labels the Endaoment fee as a stand-in and the net as Base Sepolia", () => {
+    const html = renderToString(<CheckoutForm {...demoProps} />);
+    expect(html).toContain("Endaoment fee (stand-in)");
+    expect(html).toContain("Base Sepolia");
+    expect(html).not.toContain("Endaoment Org Fund");
+  });
+});
+
 describe("AmountSelector — allowCustom", () => {
   const props = {
     valueCents: 0,

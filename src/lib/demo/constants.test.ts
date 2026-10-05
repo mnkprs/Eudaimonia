@@ -38,11 +38,11 @@ describe("centsToUsdcUnits", () => {
 });
 
 describe("isDemoAmountCents", () => {
-  test.each([100, 200, 300, 500])("accepts %i cents", (cents) => {
+  test.each([100, 200, 500])("accepts the %i-cent preset", (cents) => {
     expect(isDemoAmountCents(cents)).toBe(true);
   });
 
-  test.each([0, 99, 501, 1_000, 150.5, Number.NaN, -100])(
+  test.each([0, 99, 300, 337, 501, 1_000, 150.5, Number.NaN, -100])(
     "rejects %s",
     (cents) => {
       expect(isDemoAmountCents(cents)).toBe(false);

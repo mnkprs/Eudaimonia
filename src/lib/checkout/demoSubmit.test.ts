@@ -108,7 +108,7 @@ describe("submitDemoDonation()", () => {
   it("uses the agreed copy for wallet-empty and rate-limited", async () => {
     const empty = await run(errorResponse("demo_wallet_empty", 503));
     expect((empty.error as Error).message).toBe(
-      "The demo wallet is out of test funds right now — try again later.",
+      "The demo wallet is out of test funds right now — try again later, or open a sample receipt from the home page.",
     );
     const limited = await run(errorResponse("rate_limited", 429));
     expect((limited.error as Error).message).toBe(
